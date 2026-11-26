@@ -2,6 +2,10 @@
 
 HA Prospection is a proposed desktop-local web app for agroalimentaire sales teams. It helps a rep find buyers or suppliers, check the evidence behind each company, and export a reviewed shortlist to Excel.
 
+## Installer sur votre PC Windows
+
+Suivez le [guide d’installation Windows](INSTALLATION-WINDOWS.md) pour télécharger, ouvrir et utiliser l’application. La sélection préparée et l’export sont disponibles en local.
+
 ## Hosted version
 
 The hosted setup uses Vercel for the app and Supabase for Postgres and sign-in. The client opens the HTTPS address and sees the prepared catalogue after signing in. See the [Vercel deployment guide](DEPLOYMENT.md) for administrator setup.
@@ -25,7 +29,7 @@ Use **Prospects** to open the prepared selection or start or reopen a search, **
 1. Open **Prospects**. The prepared selection is loaded from the release and can be reviewed without a Brave key. Choose **Nouvelle recherche** for prepared missions and custom criteria when web search is configured.
 2. Under **Prospects de la sélection**, type a company, contact or source. The review buttons and **État des preuves** combine with that search. Use **Réinitialiser** to see every result again. Open each lead to inspect its evidence. **Activité de la session** shows what ran in the background.
 3. Under **Décision de revue**, select **Approuver**, **Signaler** or **Écarter**, enter a reason, and save. Only approved leads appear in **Liste prioritaire**.
-4. Choose **Une source ne répond pas** and run again. A partial run keeps completed results available.
+4. For a web search that finishes partially, open **Activité de la session** to see failed sources. Completed results remain available.
 5. Open **Ressources**, name a source, enter its URL and select its type. In a lead’s **Rattacher une source** section, select it, enter the claim, a supporting excerpt and the observation date, then save. If the lead was approved, review it again before exporting.
 6. In **Liste prioritaire**, enter a responsible person and follow-up date and click **Enregistrer le suivi**. The shortlist search narrows the screen by company, product, market or owner. Click **Exporter Excel** to download the full approved list as `ha-prospection.xlsx`. The **Leads** and **Evidence** tabs share an `ID prospect` column for matching rows.
 7. Restart the app and use **Sessions enregistrées** to reopen an earlier session and check its decisions and evidence.
