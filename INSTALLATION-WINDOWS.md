@@ -19,7 +19,7 @@ La première affiche une version commençant par `v22.`, au moins `v22.12.0`. La
 
 ## 2. Télécharger et extraire l’app
 
-1. Si vous avez reçu un fichier ZIP, enregistrez-le sur le PC. Sinon, ouvrez le [dépôt GitHub privé](https://github.com/omarajraoui/haprospection), connectez-vous avec le compte invité au dépôt, puis cliquez sur **Code → Download ZIP**. Si le lien affiche **404**, demandez à votre contact de vérifier votre accès ou de vous envoyer le ZIP directement. [Aide GitHub sur le téléchargement](https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives)
+1. Si vous avez reçu un fichier ZIP, enregistrez-le sur le PC. Sinon, ouvrez le [dépôt GitHub public](https://github.com/omarajraoui/haprospection), puis cliquez sur **Code → Download ZIP**. Le téléchargement est accessible sans compte GitHub. [Aide GitHub sur le téléchargement](https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives)
 2. Dans l’Explorateur de fichiers, ouvrez **Téléchargements**, faites un clic droit sur le ZIP et choisissez **Extraire tout**. Choisissez un dossier que vous retrouverez, par exemple dans **Documents**, puis cliquez sur **Extraire**.
 3. Ouvrez le dossier extrait. Si vous voyez encore un sous-dossier, ouvrez-le jusqu’à voir le fichier `package.json` et le dossier `src`. C’est ce dossier qui contient l’app.
 
