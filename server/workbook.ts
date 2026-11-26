@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs'
+import { sourceKind, sourceKinds } from '../src/source-quality.ts'
 import { approvedLeads, type Session } from '../src/research.ts'
 
 export async function shortlistWorkbook(sessions: Session[]) {
@@ -9,7 +10,7 @@ export async function shortlistWorkbook(sessions: Session[]) {
     'ID prospect', 'Entreprise', 'Produit', 'Marché', 'Type', 'Contact', 'Motif de revue',
     'Date de revue', 'Responsable', 'Date de relance', 'Mode de recherche',
   ])
-  evidence.addRow(['ID prospect', 'Champ', 'Source', 'URL', 'Extrait', 'Date d’observation', 'Origine'])
+  evidence.addRow(['ID prospect', 'Champ', 'Source', 'URL', 'Extrait', 'Date d’observation', 'Origine', 'Type de source'])
 
   for (const { session, lead } of approvedLeads(sessions)) {
     const id = `${session.id}/${lead.id}`
@@ -18,12 +19,13 @@ export async function shortlistWorkbook(sessions: Session[]) {
     leads.addRow([
       id, lead.name, session.search.product, session.search.market, session.search.role, lead.contact ?? '',
       review?.reason, review?.reviewedAt, followUp?.owner, followUp?.date,
-      session.mode === 'live' ? 'Recherche web' : 'Démonstration',
+      'Recherche web',
     ])
     for (const claim of lead.evidence) {
       evidence.addRow([
         id, claim.field, claim.source, claim.url, claim.excerpt,
-        claim.observedAt, claim.manual ? 'Saisie manuelle' : claim.live ? 'Page consultée' : 'Fictive',
+        claim.observedAt, claim.manual ? 'Saisie manuelle' : 'Page consultée',
+        sourceKinds[sourceKind(claim.url, claim.sourceType)].label,
       ])
     }
   }
@@ -33,6 +35,6 @@ export async function shortlistWorkbook(sessions: Session[]) {
     sheet.views = [{ state: 'frozen', ySplit: 1 }]
   }
   leads.columns.forEach((column, index) => { column.width = index === 0 ? 47 : 24 })
-  evidence.columns.forEach((column, index) => { column.width = [47, 24, 28, 37, 62, 23, 20][index] })
+  evidence.columns.forEach((column, index) => { column.width = [47, 24, 28, 37, 62, 23, 20, 32][index] })
   return workbook.xlsx.writeBuffer()
 }

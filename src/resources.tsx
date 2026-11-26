@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import type { Evidence } from './fixtures'
+import type { Evidence } from './prospects'
+import { recommendedResources, sourceKind, sourceKinds } from './source-quality'
 import type { EvidenceInput, FollowUp, Source } from './research'
 
 export const inputClass = 'mt-2 w-full rounded-lg border border-stone-300 bg-white px-3 py-2.5 text-base text-ink'
@@ -36,9 +37,9 @@ function Feedback({ error, message }: { error: string; message: string }) {
   )
 }
 
-export function Resources({ sources, fixtures, onAdd }: {
+export function Resources({ sources, discovered, onAdd }: {
   sources: Source[]
-  fixtures: Evidence[]
+  discovered: Evidence[]
   onAdd: (source: Pick<Source, 'name' | 'url' | 'type'>) => Promise<void>
 }) {
   const [name, setName] = useState('')
@@ -57,7 +58,17 @@ export function Resources({ sources, fixtures, onAdd }: {
 
   return (
     <section aria-labelledby="resources-heading" className="mt-7 rounded-xl border border-stone-200 bg-white p-5 sm:p-6">
-      <h2 id="resources-heading" className="text-2xl font-semibold">Ressources</h2>
+      <h2 id="resources-heading" className="text-2xl font-semibold">Sources recommandées</h2>
+      <ul className="mt-4 grid gap-3 md:grid-cols-2">
+        {recommendedResources.map(resource => (
+          <li key={resource.url} className="rounded-xl border border-stone-200 bg-paper p-4">
+            <p className="text-sm font-medium text-forest">{resource.market} · {sourceKinds[sourceKind(resource.url, resource.type)].label}</p>
+            <a href={resource.url} target="_blank" rel="noreferrer" className="mt-1 block font-semibold text-forest underline">{resource.name}</a>
+            <p className="mt-2 text-sm text-stone-700">{resource.description}</p>
+          </li>
+        ))}
+      </ul>
+      <h2 className="mt-7 text-xl font-semibold">Répertoire des sources</h2>
       <p className="mt-2 text-stone-700">Ajoutez une source ici, puis rattachez un extrait et une date d’observation depuis la fiche d’un prospect.</p>
       <form onSubmit={submit} className="mt-4 space-y-3" aria-label="Ajouter une source">
         <fieldset disabled={save.saving} className="grid items-end gap-3 md:grid-cols-4">
@@ -76,20 +87,20 @@ export function Resources({ sources, fixtures, onAdd }: {
         </fieldset>
         <Feedback {...save} />
       </form>
-      {sources.length === 0 && fixtures.length === 0 ? (
+      {sources.length === 0 && discovered.length === 0 ? (
         <p className="mt-5 text-stone-700">Aucune source dans le répertoire.</p>
       ) : (
         <ul className="mt-5 divide-y divide-stone-200">
           {sources.map(source => (
             <li key={source.id} className="py-3">
               <a href={source.url} target="_blank" rel="noreferrer" className="font-semibold text-forest underline">{source.name}</a>
-              <p className="break-all text-sm text-stone-700">{source.type} · Saisie manuelle · Accès non vérifié · {source.url}</p>
+              <p className="break-all text-sm text-stone-700">{sourceKinds[sourceKind(source.url, source.type)].label} · Saisie manuelle · {source.url}</p>
             </li>
           ))}
-          {fixtures.map(source => (
+          {discovered.map(source => (
             <li key={source.url} className="py-3">
               <p className="font-semibold">{source.source}</p>
-              <p className="break-all text-sm text-stone-700">{source.live ? 'Page consultée' : 'Fictive'} · Observée le {source.observedAt} · {source.url}</p>
+              <p className="break-all text-sm text-stone-700">{sourceKinds[sourceKind(source.url, source.sourceType)].label} · Observée le {source.observedAt} · {source.url}</p>
             </li>
           ))}
         </ul>
@@ -98,9 +109,10 @@ export function Resources({ sources, fixtures, onAdd }: {
   )
 }
 
-export function EvidenceForm({ sources, onAttach }: {
+export function EvidenceForm({ sources, onAttach, onResources }: {
   sources: Source[]
   onAttach: (input: EvidenceInput) => Promise<void>
+  onResources: () => void
 }) {
   const [sourceId, setSourceId] = useState('')
   const [field, setField] = useState('')
@@ -121,10 +133,10 @@ export function EvidenceForm({ sources, onAttach }: {
     <details className="mt-4 rounded-lg border border-stone-200 p-4">
       <summary className="cursor-pointer font-semibold">Rattacher une source</summary>
       {sources.length === 0 ? (
-        <p className="mt-3 text-sm text-stone-700">Ajoutez d’abord une source dans <a href="#resources-heading" className="underline">Ressources</a>.</p>
+        <p className="mt-3 text-sm text-stone-700">Ajoutez d’abord une source dans <button type="button" onClick={onResources} className="text-forest underline">Ressources</button>.</p>
       ) : (
         <form onSubmit={submit} className="mt-3 space-y-3">
-          <p className="text-sm text-stone-700">Une nouvelle preuve demande une nouvelle revue si le prospect était approuvé.</p>
+          <p className="text-sm text-stone-700">Choisissez la page exacte qui appuie le fait. Un registre sert à vérifier l’identité et un catalogue sert à vérifier l’activité déclarée. Une nouvelle preuve demande une nouvelle revue si le prospect était approuvé.</p>
           <fieldset disabled={save.saving} className="space-y-3">
             <label className="block text-sm font-semibold">Source
               <select required className={inputClass} value={sourceId} onChange={event => setSourceId(event.target.value)}>

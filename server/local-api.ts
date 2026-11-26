@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { Plugin, PreviewServer, ViteDevServer } from 'vite'
-import { sampleLeads, type Lead, type Evidence } from '../src/fixtures.ts'
+import { type Lead, type Evidence } from '../src/prospects.ts'
 import { decisions, type Session, type Review, type Source, type FollowUp } from '../src/research.ts'
 
 import { discoveryTasks, retryFailedTasks } from './discovery.ts'
@@ -80,9 +80,15 @@ type SessionRow = {
 }
 
 function createHandler(database: DatabaseSync, searchKey: string, version: string) {
-  const listSessions = database.prepare('SELECT id, payload FROM sessions ORDER BY rowid DESC')
+  const listSessions = database.prepare(`
+    SELECT id, payload FROM sessions
+    WHERE json_extract(payload, '$.mode') = 'live'
+    ORDER BY rowid DESC
+  `)
   const updateSession = database.prepare('UPDATE sessions SET payload = ? WHERE id = ? AND payload = ?')
-  const findSession = database.prepare('SELECT id, payload FROM sessions WHERE id = ?')
+  const findSession = database.prepare(`
+    SELECT id, payload FROM sessions WHERE id = ? AND json_extract(payload, '$.mode') = 'live'
+  `)
   const insertSession = database.prepare('INSERT INTO sessions (id, payload) VALUES (?, ?)')
   const listReviews = database.prepare(`
     SELECT lead_id, decision, reason, reviewed_at AS reviewedAt, evidence_revision
@@ -97,7 +103,7 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
   const findSource = database.prepare('SELECT id FROM sources WHERE id = ?')
   const insertSource = database.prepare('INSERT INTO sources (id, name, url, type, added_at) VALUES (?, ?, ?, ?, ?)')
   const listEvidence = database.prepare(`
-    SELECT e.id, e.lead_id, e.field, e.excerpt, e.observed_at AS observedAt, s.name AS source, s.url
+    SELECT e.id, e.lead_id, e.field, e.excerpt, e.observed_at AS observedAt, s.name AS source, s.url, s.type AS sourceType
     FROM manual_evidence e JOIN sources s ON s.id = e.source_id
     WHERE e.session_id = ? ORDER BY e.id
   `)
@@ -165,17 +171,11 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
         const search = {
           product: field(body.product, 100), market: field(body.market, 100), role: field(body.role, 100),
         }
-        if (body.scenario !== 'complete' && body.scenario !== 'partial') {
-          throw new RequestError(400, 'Scénario inconnu.')
-        }
-        if (body.mode !== undefined && body.mode !== 'live') throw new RequestError(400, 'Mode inconnu.')
-        if (body.mode === 'live' && !searchKey) throw new RequestError(503, 'Clé de recherche manquante.')
+        if (body.mode !== 'live') throw new RequestError(400, 'La recherche utilise uniquement des sources web.')
+        if (!searchKey) throw new RequestError(503, 'Le service de recherche web est à connecter.')
         const id = randomUUID()
         const payload = {
-          search, scenario: body.scenario, createdAt: new Date().toISOString(),
-          ...(body.mode === 'live'
-            ? { mode: 'live', tasks: discoveryTasks(search), leads: [] }
-            : { leads: sampleLeads(search) }),
+          search, mode: 'live', createdAt: new Date().toISOString(), tasks: discoveryTasks(search), leads: [],
         }
         insertSession.run(id, JSON.stringify(payload))
         return send(201, { id, ...payload, reviews: {}, followUps: {} })

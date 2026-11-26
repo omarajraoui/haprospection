@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type { DatabaseSync } from 'node:sqlite'
+import { sourceKind } from '../src/source-quality.ts'
 import type { Session } from '../src/research.ts'
 import { braveSearch, qualifyPage, readPublicPage, type Task } from './discovery.ts'
 
@@ -45,13 +46,18 @@ export function discoveryWorker(database: DatabaseSync, key: string, providers =
           }
           task.detail = `${urls.length} page(s) retournée(s)`
         } else {
-          const lead = qualifyPage(task.input, await providers.readPage(task.input), payload.search.product)
-          if (lead) {
-            const existing = payload.leads.find(item => item.id === lead.id)
-            // Preserve reviewed evidence on existing leads. The initial readable URL is the evidence of record.
-            if (!existing) payload.leads.push(lead)
+          const kind = sourceKind(task.input)
+          if (kind === 'directory' || kind === 'registry') {
+            task.detail = kind === 'directory' ? 'Annuaire : piste à recouper.' : 'Registre : à consulter pour vérifier une entreprise.'
+          } else {
+            const lead = qualifyPage(task.input, await providers.readPage(task.input), payload.search.product, payload.search.role)
+            if (lead) {
+              const existing = payload.leads.find(item => item.id === lead.id)
+              // The first readable URL remains the evidence of record for this candidate.
+              if (!existing) payload.leads.push(lead)
+            }
+            task.detail = lead ? 'Mention pertinente trouvée' : 'Aucune mention exploitable'
           }
-          task.detail = lead ? 'Mention pertinente trouvée' : 'Aucune mention exploitable'
         }
         task.state = 'complete'
       } catch (error) {

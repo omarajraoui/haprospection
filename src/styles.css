@@ -13,3 +13,85 @@ body {
 :focus-visible {
   @apply outline-2 outline-offset-4 outline-emerald-700;
 }
+
+@layer components {
+  .workspace {
+    @apply min-h-screen bg-[#f2f5f4] lg:grid lg:grid-cols-[15rem_minmax(0,1fr)];
+  }
+
+  .workspace-nav {
+    @apply bg-[#102c27] px-4 py-4 text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:px-5 lg:py-8;
+  }
+
+  .brand {
+    @apply mb-4 flex items-center gap-3 px-2 lg:mb-10;
+  }
+
+  .brand-mark {
+    @apply grid size-10 shrink-0 place-items-center rounded-xl bg-[#bce8ca] text-sm font-bold text-[#102c27];
+  }
+
+  .workspace-links {
+    @apply flex flex-wrap gap-1 lg:flex-col;
+  }
+
+  .workspace-link {
+    @apply flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 text-left text-sm font-medium text-emerald-50/85 hover:bg-white/10 aria-[current=page]:bg-[#28564b] aria-[current=page]:text-white;
+  }
+
+  .workspace-link:focus-visible {
+    @apply outline-emerald-200;
+  }
+
+  .nav-count {
+    @apply rounded-md bg-white/10 px-2 py-0.5 text-xs tabular-nums;
+  }
+
+  .nav-footer {
+    @apply mt-auto hidden space-y-1 border-t border-white/15 px-2 pt-4 text-xs text-emerald-50/75 lg:block;
+  }
+
+  .workspace-main {
+    @apply mx-auto w-full max-w-[92rem] px-4 pb-12 pt-6 sm:px-7 lg:px-9 lg:pt-9;
+  }
+
+  .page-header {
+    @apply mb-6 flex flex-wrap items-center justify-between gap-4;
+  }
+
+  .page-header h1 {
+    @apply text-3xl font-semibold tracking-tight text-[#132820] sm:text-4xl;
+  }
+
+  .page-header p {
+    @apply mt-2 text-slate-600;
+  }
+
+  .surface {
+    @apply rounded-2xl border border-[#d9e3de] bg-white shadow-[0_1px_2px_#143b2910];
+  }
+
+  .primary-button {
+    @apply rounded-lg bg-forest px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-900 disabled:opacity-60;
+  }
+
+  .secondary-button {
+    @apply min-h-11 rounded-lg border border-[#d9e3de] px-3 py-2 text-sm font-semibold text-forest hover:bg-emerald-50;
+  }
+
+  .mode-label {
+    @apply justify-self-start rounded-lg bg-[#e5f1eb] px-3 py-2 text-sm font-medium text-forest;
+  }
+
+  .filter-pill {
+    @apply rounded-lg border border-[#d9e3de] px-3 py-2 text-sm font-medium hover:border-forest aria-pressed:border-forest aria-pressed:bg-forest aria-pressed:text-white;
+  }
+
+  .filter-pill span {
+    @apply ml-1 text-xs tabular-nums opacity-80;
+  }
+
+  .lead-row {
+    @apply w-full rounded-xl border border-[#d9e3de] bg-white p-4 text-left hover:border-forest aria-pressed:border-forest aria-pressed:bg-[#e8f5ed];
+  }
+}

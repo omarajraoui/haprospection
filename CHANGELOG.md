@@ -1,5 +1,13 @@
 # Release notes
 
+## v1.0.0-rc.2
+
+Prepared research missions, separate workspaces, and result filters simplify the operator workflow. Resources and evidence identify the role of each source, including in Excel.
+
+The client workspace accepts live web searches only. Existing demonstration sessions stay in the local database and are excluded from history, shortlist and Excel export. Without a configured Brave Search key, new research is unavailable and saved web sessions remain accessible.
+
+Verified the production build, browser behavior without a key, and exclusion of a previously approved sample record from history and workbook export. The Windows, Microsoft Excel and live provider acceptance checks still apply.
+
 ## v1.0.0-rc.1
 
 First client release candidate for the local HA Prospection MVP. Includes demo and Brave Search modes, saved sessions, lead review, a source directory, manual evidence, follow-up fields, and Excel shortlist export. These features run in a browser on the operator’s computer.

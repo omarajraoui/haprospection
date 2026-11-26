@@ -38,7 +38,7 @@ Price research (Agent 3) and RFQ discovery (Agent 2) can run independently once 
 - **Data** includes `ResearchSession`, `RunStep`, `Company`, `Lead`, `Source`, `EvidenceClaim` and `ReviewDecision`. A company may have distinct leads by product, market and role. Evidence records the field, observed value, source URL, excerpt, observed time and publication date if available. Review records carry the reviewer, decision, reason and time.
 - **API** includes `POST /sessions`, `GET /sessions/:id`, `POST /sessions/:id/retry`, `GET /leads`, `GET /leads/:id`, `POST /leads/:id/reviews`, `GET /sources`, `POST /sources` and `GET /shortlist/export.xlsx`. Keep records in the local installation.
 - **Run state** progresses through queued, running and complete, partial or failed. Session creation accepts an idempotency key. Claim jobs with a lease and write outputs with stable keys so recovery can resume without creating duplicate evidence or resetting review decisions. If subsequent evidence contradicts an approved claim, mark the lead for renewed review before export.
-- **Source retrieval** restricts outbound fetching to public HTTP(S), validates redirects and destination addresses, and limits response sizes and timeouts. Record provider usage, source failures and per-run cost. Fixture mode is clearly labeled and yields repeatable results without credentials.
+- **Source retrieval** restricts outbound fetching to public HTTP(S), validates redirects and destination addresses, and limits response sizes and timeouts. Record provider usage, source failures and per-run cost. Test fixtures are reserved for internal verification. The client workspace and workbook include real web sessions only.
 
 ## Stress test
 
@@ -60,13 +60,13 @@ The [build plan](BUILD-PLAN.md) defines the order, deliverables and acceptance c
 
 **Delivery assumption.** The client runs the app in their browser on their own PC. Prioritize Windows for packaging and clean-machine testing, pending confirmation of the client’s OS. Sample mode runs with local data. Live mode requires internet access and credentials for the configured providers. Keep credentials and business data outside the checkout so they survive upgrades.
 
-**Repository entry point.** The README explains the business purpose, current release status, setup requirements, how to launch and stop the app, and where the client’s data lives. The shipped release includes a step-by-step walkthrough covering a sample search, source inspection, lead approval, and Excel export. The guide also explains the progress states, how to recover from a partial run, and how to configure live providers. Explain the agents in terms of what each step does and what still needs human review.
+**Repository entry point.** The README explains the business purpose, current release status, setup requirements, how to launch and stop the app, and where the client’s data lives. The shipped release includes a step-by-step walkthrough covering a web search, source inspection, lead approval, and Excel export. The guide also explains the progress states, how to recover from a partial run, and how to configure live providers. Explain the agents in terms of what each step does and what still needs human review.
 
 **Installation and support.** Provide one documented launcher for the supported OS that starts the API and worker and opens the local app. Ship an example configuration with placeholder values. Show the installed version and the path to logs in the app. Document backup and restore for the local database, prerequisites and common troubleshooting steps. Keep secrets, databases, backups and logs out of Git.
 
 **Release process.** Use semantic versioning. Tag pre-release builds as `v0.x.y` and the accepted client release as `v1.0.0`. Pin dependencies with a committed lockfile, publish a changelog for each tag, and link the tagged release from the client handoff. Include a ready-to-run download if the supported platform can be packaged and tested. Document any required runtime alongside it.
 
-**Upgrade and recovery.** Stop the app, back up the database, install the tagged release, migrate the database if needed, then verify the version and open an existing lead. A rollback across a database migration restores the matching pre-upgrade backup and previous release. Tag the client release only after verifying installation from scratch, persistence after restart, the sample flow, and backup and restore on the target OS.
+**Upgrade and recovery.** Stop the app, back up the database, install the tagged release, migrate the database if needed, then verify the version and open an existing lead. A rollback across a database migration restores the matching pre-upgrade backup and previous release. Tag the client release only after verifying installation from scratch, persistence after restart, the live search flow, and backup and restore on the target OS.
 
 ## Pilot gate
 

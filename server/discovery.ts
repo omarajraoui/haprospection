@@ -4,7 +4,8 @@ import { request } from 'node:https'
 import { setTimeout as delay } from 'node:timers/promises'
 import { load } from 'cheerio'
 import ipaddr from 'ipaddr.js'
-import type { Lead, Search } from '../src/fixtures.ts'
+import { sourceKind } from '../src/source-quality.ts'
+import type { Lead, Search } from '../src/prospects.ts'
 
 export type Task = {
   kind: 'search' | 'page'
@@ -116,18 +117,26 @@ function tokens(value: string) {
   return words.map(word => word.length > 4 ? word.replace(/s$/, '') : word)
 }
 
-export function qualifyPage(input: string, html: string, product: string): Lead | undefined {
+export function qualifyPage(input: string, html: string, product: string, role = ''): Lead | undefined {
   const url = publicUrl(input)
+  const kind = sourceKind(url.href)
+  if (kind === 'directory' || kind === 'registry') return undefined
   const $ = load(html)
   $('script, style, template, noscript, nav, footer').remove()
   const candidates = $('h1, h2, h3, p, li').toArray()
   const terms = new Set(tokens(product))
   if (!terms.size) return undefined
   const excerpts = candidates.map(element => $(element).text().replace(/\s+/g, ' ').trim().slice(0, 360))
-  const excerpt = excerpts.find(text => {
-    const matched = new Set(tokens(text).filter(token => terms.has(token)))
-    return text.length >= 12 && matched.size >= Math.min(2, terms.size)
+  const roleTerms = tokens(role).map(word => word.slice(0, 6))
+  const eligible = excerpts.flatMap(text => {
+    const words = tokens(text)
+    const matched = new Set(words.filter(token => terms.has(token)))
+    if (text.length < 12 || matched.size < Math.min(2, terms.size)) return []
+    const roleMention = words.some(word => roleTerms.some(term => word.startsWith(term)))
+    return [{ text, score: matched.size * 2 + Number(roleMention) * 3 + Number(text.length > 45) }]
   })
+  eligible.sort((first, second) => second.score - first.score)
+  const excerpt = eligible[0]?.text
   if (!excerpt) return undefined
   const domain = url.hostname.replace(/^www\./, '')
   const name = ($('meta[property="og:site_name"]').attr('content') || domain).trim().slice(0, 120) || domain

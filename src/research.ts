@@ -1,4 +1,4 @@
-import type { Lead, Scenario, Search } from './fixtures'
+import type { Lead, Search } from './prospects'
 
 export const decisions = {
   approved: 'Approuvé',
@@ -17,8 +17,7 @@ export type Review = {
 export type Session = {
   id: string
   search: Search
-  scenario: Scenario
-  mode?: 'live'
+  mode: 'live'
   retried?: boolean
   tasks?: {
     kind: 'search' | 'page'

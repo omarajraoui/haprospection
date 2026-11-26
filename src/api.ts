@@ -1,4 +1,4 @@
-import type { Scenario, Search } from './fixtures'
+import type { Search } from './prospects'
 import type { Decision, EvidenceInput, FollowUp, Session, Source } from './research'
 
 async function request<T>(path: string, method = 'GET', body?: object): Promise<T> {
@@ -14,8 +14,8 @@ async function request<T>(path: string, method = 'GET', body?: object): Promise<
 
 export const loadSessions = () => request<Session[]>('/api/sessions')
 
-export const createSession = (search: Search, scenario: Scenario, mode?: 'live') =>
-  request<Session>('/api/sessions', 'POST', { ...search, scenario, mode })
+export const createSession = (search: Search) =>
+  request<Session>('/api/sessions', 'POST', { ...search, mode: 'live' })
 
 export const saveReview = (sessionId: string, leadId: string, decision: Decision, reason: string) =>
   request<Session>(`/api/sessions/${sessionId}/leads/${leadId}/review`, 'PUT', { decision, reason })

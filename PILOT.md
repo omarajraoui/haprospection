@@ -4,11 +4,11 @@ Run this walkthrough after the MVP is installed from the tagged client release. 
 
 ## Installation walkthrough
 
-1. Open the app and run the prefilled search in **Démonstration**. Check the progress and open each result. Find the corroborating evidence, missing contact, and conflicting identities.
-2. Approve the first lead, flag the second, and dismiss the third. Add a reason for each. Confirm that only the approved lead appears in **Liste prioritaire**.
-3. Add a source under **Ressources**, attach it from the approved lead, and check that the lead returns to review. Approve the lead again, set a follow-up owner and date, and export it.
-4. Open the workbook in Excel. Match the **Leads** and **Evidence** tabs using **ID prospect** and confirm that the workbook labels the run as a demo.
-5. Run the partial demo scenario, then stop and restart the app. Reopen both saved sessions and verify that the partial status, review reasons, and follow-up data remain available.
+1. Configure the search provider, then launch the canned-fish mission. Open the session activity and check the query and page outcomes.
+2. Open the resulting leads and inspect the linked evidence. Approve only leads whose identity and activity you can verify. Flag or dismiss questionable leads and record a reason.
+3. Attach a real supporting source to an approved lead and check that it returns to review. Approve it again after checking the source, set a follow-up owner and date, and export it.
+4. Open the workbook in Excel. Match the **Leads** and **Evidence** tabs using **ID prospect** and confirm that the workbook identifies the session as a web search.
+5. Stop and restart the app. Reopen the saved session and verify that the review reasons, evidence, and follow-up data remain available.
 
 ## Live pilot
 
