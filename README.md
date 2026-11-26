@@ -81,6 +81,7 @@ Les anciennes versions de développement stockaient la base dans `data/prospecti
 
 ## Documentation technique
 
+- [Déploiement Netlify et Supabase](DEPLOIEMENT-NETLIFY.md) pour l’administration d’un site Netlify.
 - [Déploiement Vercel et Supabase](DEPLOYMENT.md) pour l’administration de la version hébergée.
 - [Parcours de test](PILOT.md), [notes de version](CHANGELOG.md) et [exigences techniques](TRD.md).
 

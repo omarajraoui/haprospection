@@ -32,9 +32,15 @@ async function readBody(request: Request) {
   return value as Record<string, unknown>
 }
 
-const searchEnabled = () => Boolean(process.env.BRAVE_SEARCH_API_KEY?.trim() && process.env.CRON_SECRET)
+function cloudConfigured() {
+  return [process.env.DATABASE_URL, process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY,
+    process.env.HAPROSPECTION_CLIENT_EMAIL].every(value => value?.trim())
+}
 
-export async function handleWorkspace(request: Request) {
+export async function handleWorkspace(
+  request: Request, { scheduledResearch = Boolean(process.env.CRON_SECRET) } = {},
+) {
+  const searchEnabled = () => Boolean(process.env.BRAVE_SEARCH_API_KEY?.trim() && scheduledResearch)
   const url = new URL(request.url)
   const { method } = request
   const path = url.pathname === '/api/workspace'
@@ -48,6 +54,9 @@ export async function handleWorkspace(request: Request) {
     }
     if (path === 'auth/logout' && method === 'POST') {
       return json({ authenticated: false }, 200, { 'Set-Cookie': await logout(request) })
+    }
+    if (path === 'auth/status' && method === 'GET' && !cloudConfigured()) {
+      return json({ hosted: true, authenticated: false, configured: false })
     }
     const owner = await currentOwner(request)
     if (path === 'auth/status' && method === 'GET') return json({ hosted: true, authenticated: Boolean(owner) })
@@ -90,4 +99,8 @@ export async function handleWorkspace(request: Request) {
   }
 }
 
-export default { fetch: handleWorkspace }
+export default {
+  fetch(request: Request) {
+    return handleWorkspace(request)
+  },
+}

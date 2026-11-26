@@ -39,7 +39,7 @@ export const saveFollowUp = (sessionId: string, leadId: string, followUp: Follow
 export const discoveryConfig = () => request<{ enabled: boolean; version: string; logPath: string }>('/api/discovery')
 export const retryDiscovery = (id: string) => request<Session>(`/api/sessions/${id}/retry`, 'POST', {})
 
-export type AccessStatus = { hosted: boolean; authenticated: boolean }
+export type AccessStatus = { hosted: boolean; authenticated: boolean; configured?: boolean }
 export const accessStatus = () => request<AccessStatus>('/api/auth/status')
 export const signIn = (email: string, password: string) =>
   request<{ authenticated: boolean }>('/api/auth/login', 'POST', { email, password })

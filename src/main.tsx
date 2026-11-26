@@ -682,7 +682,11 @@ function Portal() {
           <p className="mt-2 text-slate-700">Accédez à votre espace de prospection.</p>
         </div>
         {checking ? <p role="status">Ouverture de l’espace…</p>
-          : status ? (
+          : status?.configured === false ? (
+            <p role="status" className="rounded-lg bg-paper p-3 text-slate-700">
+              L’administrateur doit encore configurer la connexion à la base de données.
+            </p>
+          ) : status ? (
             <form onSubmit={connect} className="space-y-4">
               <fieldset disabled={working} className="space-y-4">
                 <label className="block text-sm font-semibold">Adresse e-mail

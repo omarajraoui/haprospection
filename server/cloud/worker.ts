@@ -33,3 +33,12 @@ export async function processQueuedTask(key: string, providers = discoveryProvid
   `, [job.owner, job.id, job.state, job.token])
   return true
 }
+
+export async function processResearchBatch(durationMs: number) {
+  const key = process.env.BRAVE_SEARCH_API_KEY?.trim()
+  if (!key) return 0
+  const deadline = Date.now() + durationMs
+  let processed = 0
+  while (Date.now() < deadline && processed < 12 && await processQueuedTask(key)) processed++
+  return processed
+}
