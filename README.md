@@ -1,10 +1,13 @@
 # HA Prospection
 
-HA Prospection is a proposed desktop-local web app for agroalimentaire sales teams. It helps a rep find buyers or suppliers, check the evidence behind each company, and export a reviewed shortlist to Excel.
+HA Prospection aide votre équipe à trouver des entreprises agroalimentaires, à vérifier leurs sources et à exporter la liste des prospects retenus.
 
-## Installer sur votre PC Windows
+## Commencer sur Windows
 
-Suivez le [guide d’installation Windows](INSTALLATION-WINDOWS.md) pour télécharger, ouvrir et utiliser l’application. La sélection préparée et l’export sont disponibles en local.
+1. Lisez le [guide d’installation Windows](INSTALLATION-WINDOWS.md). Il vous accompagne depuis le téléchargement de Node.js jusqu’au premier export Excel.
+2. Une fois l’app ouverte, choisissez **Prospects** pour consulter la sélection préparée, **Liste prioritaire** pour retrouver vos prospects approuvés et **Mode d’emploi** si vous souhaitez revoir le parcours.
+
+Le **README** présente le projet et indique où trouver l’aide. Le **guide Windows** est le document à suivre pour installer l’app sur votre PC. Un navigateur et Node.js suffisent pour le parcours local. Le guide Vercel ci-dessous concerne l’administration de la version hébergée.
 
 ## Hosted version
 
