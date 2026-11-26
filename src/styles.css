@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #142c27;
+  --color-forest: #174838;
+  --color-paper: #f5f7f4;
+}
+
+body {
+  @apply bg-paper text-ink antialiased;
+}
+
+:focus-visible {
+  @apply outline-2 outline-offset-4 outline-emerald-700;
+}
