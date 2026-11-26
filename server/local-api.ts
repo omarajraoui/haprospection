@@ -1,3 +1,4 @@
+import preparedCatalogue from './prepared-catalogue.json' with { type: 'json' }
 import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -82,12 +83,12 @@ type SessionRow = {
 function createHandler(database: DatabaseSync, searchKey: string, version: string) {
   const listSessions = database.prepare(`
     SELECT id, payload FROM sessions
-    WHERE json_extract(payload, '$.mode') = 'live'
+    WHERE json_extract(payload, '$.mode') IN ('live', 'prepared')
     ORDER BY rowid DESC
   `)
   const updateSession = database.prepare('UPDATE sessions SET payload = ? WHERE id = ? AND payload = ?')
   const findSession = database.prepare(`
-    SELECT id, payload FROM sessions WHERE id = ? AND json_extract(payload, '$.mode') = 'live'
+    SELECT id, payload FROM sessions WHERE id = ? AND json_extract(payload, '$.mode') IN ('live', 'prepared')
   `)
   const insertSession = database.prepare('INSERT INTO sessions (id, payload) VALUES (?, ?)')
   const listReviews = database.prepare(`
@@ -316,6 +317,9 @@ export function localApi(version: string): Plugin {
       database.close()
       throw error
     }
+    const catalogueId = '803dfe4c-e447-4894-a16a-8accc64af456'
+    database.prepare('INSERT INTO sessions (id, payload) VALUES (?, ?) ON CONFLICT (id) DO NOTHING')
+      .run(catalogueId, JSON.stringify(preparedCatalogue))
     const key = process.env.BRAVE_SEARCH_API_KEY?.trim() ?? ''
     const stop = key ? discoveryWorker(database, key) : undefined
     server.middlewares.use(createHandler(database, key, version))

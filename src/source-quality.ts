@@ -35,6 +35,6 @@ export function sourceKind(url: string, type?: string): keyof typeof sourceKinds
   const onDomain = (domain: string) => host === domain || host.endsWith('.' + domain)
   if (registries.some(onDomain)) return 'registry'
   if (directories.some(onDomain) || type === 'Annuaire') return 'directory'
-  if (onDomain('moulin-ville.fr') || type === 'Site d’entreprise') return 'company'
+  if (onDomain('moulin-ville.fr') || onDomain('vital.fr') || type === 'Site d’entreprise') return 'company'
   return 'unknown'
 }

@@ -1,0 +1,68 @@
+{
+  "mode": "prepared",
+  "search": {
+    "product": "Poisson en conserve",
+    "market": "France",
+    "role": "Importateurs et distributeurs"
+  },
+  "createdAt": "2026-11-26T02:01:58.348Z",
+  "tasks": [],
+  "leads": [
+    {
+      "id": "siren-452565823",
+      "name": "MOULIN VILLE FRANCE",
+      "contact": null,
+      "status": "documented",
+      "reason": "Identité contrôlée dans le registre français et gamme documentée par l’entreprise. Confirmez le contact achats et l’intérêt pour votre offre.",
+      "evidence": [
+        {
+          "field": "Dénomination et immatriculation",
+          "source": "API Recherche d’entreprises · Annuaire des entreprises",
+          "url": "https://annuaire-entreprises.data.gouv.fr/entreprise/452565823",
+          "excerpt": "MOULIN VILLE FRANCE · SIREN 452565823 · unité légale active au moment de la consultation.",
+          "observedAt": "2026-11-26",
+          "live": true,
+          "paraphrased": true
+        },
+        {
+          "field": "Gamme et activité déclarée",
+          "source": "MOULIN VILLE FRANCE",
+          "url": "https://moulin-ville.fr/poisson",
+          "excerpt": "L’entreprise présente une gamme de conserves de poisson pour les professionnels et décrit son activité de grossiste importateur.",
+          "observedAt": "2026-11-26",
+          "live": true,
+          "sourceType": "Site d’entreprise",
+          "paraphrased": true
+        }
+      ]
+    },
+    {
+      "id": "siren-636680415",
+      "name": "VITAL",
+      "contact": null,
+      "status": "documented",
+      "reason": "Identité contrôlée dans le registre français et gamme documentée par l’entreprise. Confirmez le contact achats et l’intérêt pour votre offre.",
+      "evidence": [
+        {
+          "field": "Dénomination et immatriculation",
+          "source": "API Recherche d’entreprises · Annuaire des entreprises",
+          "url": "https://annuaire-entreprises.data.gouv.fr/entreprise/636680415",
+          "excerpt": "VITAL · SIREN 636680415 · unité légale active au moment de la consultation.",
+          "observedAt": "2026-11-26",
+          "live": true,
+          "paraphrased": true
+        },
+        {
+          "field": "Gamme et activité déclarée",
+          "source": "VITAL",
+          "url": "https://vital.fr/",
+          "excerpt": "Le site présente VITAL comme grossiste importateur de conserves alimentaires en France et cite le thon et les sardines dans sa gamme.",
+          "observedAt": "2026-11-26",
+          "live": true,
+          "sourceType": "Site d’entreprise",
+          "paraphrased": true
+        }
+      ]
+    }
+  ]
+}

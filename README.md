@@ -4,7 +4,7 @@ HA Prospection is a proposed desktop-local web app for agroalimentaire sales tea
 
 ## Install and start
 
-The MVP release candidate is `v1.0.0-rc.2`. Install Node.js 22.12 or later with npm, then download and extract the source archive for this version. An internet connection is needed for the first dependency install. Open a terminal in the extracted folder and run:
+The MVP release candidate is `v1.0.0-rc.3`. Install Node.js 22.12 or later with npm, then download and extract the source archive for this version. An internet connection is needed for the first dependency install. Open a terminal in the extracted folder and run:
 
 ```sh
 npm ci
@@ -16,17 +16,17 @@ On Windows PowerShell, use `npm.cmd` in place of `npm` if a local policy blocks 
 
 ## Try the MVP
 
-Use **Recherche** to start or reopen a session, **Liste prioritaire** for approved leads, and **Ressources** for supporting sources. **Mode d’emploi** explains the workflow inside the app.
+Use **Prospects** to open the prepared selection or start or reopen a search, **Liste prioritaire** for approved leads, and **Ressources** for supporting sources. **Mode d’emploi** explains the workflow inside the app.
 
-1. Under **Missions prêtes à lancer**, select one of the prepared missions and click **Lancer la mission**. The product, country and company type are already set. Use **Personnaliser une recherche** for a different brief. New missions require the web search service.
-2. Under **Prospects de la session**, type a company, contact or source. The review buttons and **État des preuves** combine with that search. Use **Réinitialiser** to see every result again. Open each lead to inspect its evidence. **Activité de la session** shows what ran in the background.
+1. Open **Prospects**. The prepared selection is loaded from the release and can be reviewed without a Brave key. Choose **Nouvelle recherche** for prepared missions and custom criteria when web search is configured.
+2. Under **Prospects de la sélection**, type a company, contact or source. The review buttons and **État des preuves** combine with that search. Use **Réinitialiser** to see every result again. Open each lead to inspect its evidence. **Activité de la session** shows what ran in the background.
 3. Under **Décision de revue**, select **Approuver**, **Signaler** or **Écarter**, enter a reason, and save. Only approved leads appear in **Liste prioritaire**.
 4. Choose **Une source ne répond pas** and run again. A partial run keeps completed results available.
 5. Open **Ressources**, name a source, enter its URL and select its type. In a lead’s **Rattacher une source** section, select it, enter the claim, a supporting excerpt and the observation date, then save. If the lead was approved, review it again before exporting.
 6. In **Liste prioritaire**, enter a responsible person and follow-up date and click **Enregistrer le suivi**. The shortlist search narrows the screen by company, product, market or owner. Click **Exporter Excel** to download the full approved list as `ha-prospection.xlsx`. The **Leads** and **Evidence** tabs share an `ID prospect` column for matching rows.
 7. Restart the app and use **Sessions enregistrées** to reopen an earlier session and check its decisions and evidence.
 
-The client workspace uses real web searches. Earlier sample sessions are excluded from history and export. Read the [pilot walkthrough](PILOT.md) for the full acceptance test.
+The client workspace uses real sources for the prepared selection and all searches. Earlier sample sessions are excluded from history and export. Read the [pilot walkthrough](PILOT.md) for the full acceptance test.
 
 ## Local data and backup
 
@@ -49,6 +49,12 @@ Keep backups outside the source checkout and Git, for example by passing a full 
 4. If you need to roll back, stop the new version and restore the pre-upgrade backup before launching the previous release.
 
 Earlier development builds wrote to `data/prospection.sqlite` inside the checkout. To bring it forward, stop the development server, then pass the full path of that database to the release's restore command. Development with `npm run dev` continues to use the checkout’s `data` folder by default.
+
+## Prepared selection
+
+The first selection contains French importers of canned fish. Each record links to the French public registry and the company page supporting its product range. Registry checks use the [API Recherche d’entreprises](https://recherche-entreprises.api.gouv.fr/docs/). The company-page summaries are reviewed separately. Dates appear with each source and the operator decides whether to approve the lead.
+
+The release ships a snapshot. Each local database imports it once, so app restarts preserve any review decisions. To prepare a snapshot for a new installation, review the company pages listed in the catalogue script and run `npm run catalogue:prepare -- YYYY-MM-DD` using the date you reviewed them. The script checks the SIREN records through the public API before writing the snapshot. Operators do not need to run this command.
 
 ## Enable live web discovery
 

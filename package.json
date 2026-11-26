@@ -1,13 +1,14 @@
 {
   "name": "ha-prospection",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "start": "node scripts/start.mjs",
     "backup": "node scripts/data.mjs backup",
-    "restore": "node scripts/data.mjs restore"
+    "restore": "node scripts/data.mjs restore",
+    "catalogue:prepare": "node scripts/prepare-catalogue.mjs"
   },
   "type": "module",
   "private": true,

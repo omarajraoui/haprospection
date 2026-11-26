@@ -12,6 +12,7 @@ import './styles.css'
 const statusLabels = {
   corroborated: { label: 'Sources concordantes', style: 'bg-emerald-100 text-emerald-900' },
   missing: { label: 'Contact manquant', style: 'bg-amber-100 text-amber-950' },
+  documented: { label: 'Identité et gamme documentées', style: 'bg-emerald-100 text-emerald-900' },
   unverified: { label: 'Candidat à vérifier', style: 'bg-amber-100 text-amber-950' },
   conflict: { label: 'Identité à vérifier', style: 'bg-rose-100 text-rose-950' },
 }
@@ -106,7 +107,7 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
       <p className="mt-2 text-stone-700">{lead.reason}</p>
       <dl className="mt-4 rounded-lg bg-paper p-4">
         <dt className="text-sm font-semibold">Contact achats</dt>
-        <dd className="mt-1 break-words">{lead.contact ?? 'Aucun contact public dans les sources de cet exemple'}</dd>
+        <dd className="mt-1 break-words">{lead.contact ?? 'Aucun contact achats documenté'}</dd>
       </dl>
       <h4 className="mb-3 mt-6 text-lg font-semibold">Éléments de preuve</h4>
       <ul className="space-y-3">
@@ -117,9 +118,11 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
               <h5 className="font-semibold">{claim.field}</h5>
               <span className="rounded-md bg-paper px-2 py-1 text-xs font-medium text-forest">{quality.label}</span>
             </div>
-            <blockquote className="my-2 border-l-2 border-emerald-600 pl-3 text-stone-700">{claim.excerpt}</blockquote>
+            {claim.paraphrased
+              ? <p className="my-2 border-l-2 border-emerald-600 pl-3 text-stone-700">{claim.excerpt}</p>
+              : <blockquote className="my-2 border-l-2 border-emerald-600 pl-3 text-stone-700">{claim.excerpt}</blockquote>}
             <p className="text-sm text-stone-700">
-              {claim.source} · {claim.manual ? 'Saisie manuelle' : 'Page consultée'} · <time dateTime={claim.observedAt}>{claim.observedAt}</time>
+              {claim.source} · {claim.manual ? 'Saisie manuelle' : claim.paraphrased ? 'Synthèse de la source' : 'Source consultée'} · <time dateTime={claim.observedAt}>{claim.observedAt}</time>
             </p>
             <p className="mt-1 break-all text-sm text-stone-600">
               {claim.manual || claim.live ? <a className="underline" href={claim.url} target="_blank" rel="noreferrer">{claim.url}</a> : claim.url}
@@ -139,7 +142,7 @@ const reviewFilters = [
 ] as const
 
 const sections = {
-  research: 'Recherche',
+  research: 'Prospects',
   shortlist: 'Liste prioritaire',
   resources: 'Ressources',
   guide: 'Mode d’emploi',
@@ -152,10 +155,10 @@ function Guide({ onSearch }: { onSearch: () => void }) {
     <section className="surface max-w-3xl space-y-5 p-6 sm:p-8">
       <div>
         <h2 className="text-xl font-semibold">De la recherche à la liste prioritaire</h2>
-        <p className="mt-2 text-slate-600">Le produit, le marché et le type d’entreprise définissent la recherche. Les filtres servent ensuite à trier les résultats de la session ouverte.</p>
+        <p className="mt-2 text-slate-600">Commencez par examiner les entreprises et leurs sources dans la sélection préparée. Lancez une nouvelle recherche si vous souhaitez trouver d’autres prospects.</p>
       </div>
       <ol className="space-y-4 pl-5 text-slate-700 marker:font-semibold marker:text-forest list-decimal">
-        <li><strong>Choisir une mission.</strong> Les recherches préparées contiennent déjà le produit, le pays et le type d’entreprise. Cliquez sur <em>Lancer la mission</em>. La recherche démarre lorsque le service web est connecté.</li>
+        <li><strong>Ouvrir la sélection.</strong> Les premières fiches sont disponibles dès l’ouverture. <em>Nouvelle recherche</em> permet d’élargir la sélection avec une mission ou vos propres critères lorsque le service web est connecté.</li>
         <li><strong>Filtrer les résultats.</strong> Tapez un nom, un contact ou une source. Cliquez sur <em>À examiner</em> pour afficher les décisions en attente. Le filtre <em>État des preuves</em> permet par exemple d’isoler les contacts manquants.</li>
         <li><strong>Examiner une fiche.</strong> Ouvrez les extraits et leurs sources. Ajoutez une source depuis <em>Ressources</em>, puis rattachez-la à la fiche si nécessaire.</li>
         <li><strong>Décider et exporter.</strong> Approuvez, signalez ou écartez le prospect avec un motif. Les prospects approuvés vont dans la liste prioritaire pour le suivi et l’export Excel.</li>
@@ -168,7 +171,7 @@ function Guide({ onSearch }: { onSearch: () => void }) {
 
 function App() {
   const [section, setSection] = useState<Section>('research')
-  const [showMissions, setShowMissions] = useState(true)
+  const [showMissions, setShowMissions] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [query, setQuery] = useState('')
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('all')
@@ -184,6 +187,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState('')
+  const catalogue = sessions.find(session => session.mode === 'prepared')
   const run = sessions.find(session => session.id === activeId)
   const liveRunning = run?.tasks?.some(task => task.state === 'queued') ?? false
   const running = liveEnabled && liveRunning
@@ -196,8 +200,9 @@ function App() {
       setSessions(history)
       setSources(resources)
       setConfiguration(config)
-      setActiveId(history[0]?.id ?? '')
-      setSelected(history[0]?.leads[0]?.id ?? '')
+      const initial = history.find(session => session.mode === 'prepared') ?? history[0]
+      setActiveId(initial?.id ?? '')
+      setSelected(initial?.leads[0]?.id ?? '')
     }).catch(() => {
       if (active) setError('Impossible de charger les sessions locales. Actualisez la page pour réessayer.')
     }).finally(() => {
@@ -333,24 +338,32 @@ function App() {
       <main className="workspace-main">
         <header className="page-header">
           <div>
-            <h1>{section === 'research' ? 'Recherche de prospects' : sections[section]}</h1>
+            <h1>{section === 'research' ? 'Prospects' : sections[section]}</h1>
             <p>{{
-              research: 'Choisissez une mission. L’application cherche les candidats et vous présente les sources à vérifier.',
+              research: 'Examinez les prospects déjà documentés ou lancez une recherche pour élargir la sélection.',
               shortlist: 'Retrouvez les prospects approuvés et planifiez les relances.',
               resources: 'Consultez les sources et ajoutez vos propres références.',
               guide: 'Suivez le parcours de la première recherche à l’export.',
             }[section]}</p>
           </div>
-          {section === 'research' && !showMissions && (
-            <button type="button" className="primary-button" onClick={() => setShowMissions(true)}>
-              Nouvelle mission
-            </button>
+          {section === 'research' && (
+            <div className="flex flex-wrap gap-2">
+              {catalogue && run?.id !== catalogue.id && (
+                <button type="button" className="secondary-button" onClick={() => openSession(catalogue)}>
+                  Voir la sélection préparée
+                </button>
+              )}
+              <button type="button" className="primary-button" aria-expanded={showMissions} aria-controls="web-search-options"
+                onClick={() => setShowMissions(!showMissions)}>
+                {showMissions ? 'Masquer les options de recherche' : 'Nouvelle recherche'}
+              </button>
+            </div>
           )}
         </header>
 
         {section === 'research' && <>
         {showMissions && (
-          <section aria-labelledby="missions-heading" className="surface p-5 sm:p-6">
+          <section id="web-search-options" aria-labelledby="missions-heading" className="surface p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="missions-heading" className="text-xl font-semibold">Missions prêtes à lancer</h2>
               <span className="mode-label">{loading ? 'Vérification du service…' : liveEnabled ? 'Recherche web disponible' : 'Service web à connecter'}</span>
@@ -418,16 +431,24 @@ function App() {
                 }}>
                 {sessions.map(session => (
                   <option key={session.id} value={session.id}>
-                    {session.search.product} · {session.search.market} · {dateTime.format(new Date(session.createdAt))}
+                    {session.mode === 'prepared' ? 'Sélection préparée · ' : ''}{session.search.product} · {session.search.market} · {dateTime.format(new Date(session.createdAt))}
                   </option>
                 ))}
               </select>
             </label>
-            {run && <span className="mode-label">Recherche web</span>}
+            {run && <span className="mode-label">{run.mode === 'prepared' ? 'Sélection préparée' : 'Recherche web'}</span>}
           </section>
         )}
 
-        {run && (
+        {run?.mode === 'prepared' && (
+          <section aria-labelledby="catalogue-heading" className="surface mt-4 p-5 sm:p-6">
+            <h2 id="catalogue-heading" className="text-xl font-semibold">{run.search.product} · {run.search.market}</h2>
+            <p className="mt-2 text-slate-700">{run.leads.length} entreprises à examiner. Leur identité a été contrôlée dans le registre français et leur gamme est documentée par leur site.</p>
+            <p className="mt-2 text-sm text-slate-600">Vérifiez l’intérêt pour votre offre et le bon interlocuteur avant de prendre contact. Les dates de consultation figurent dans chaque fiche.</p>
+          </section>
+        )}
+
+        {run?.mode === 'live' && (
           <section aria-labelledby="session-activity" className="surface mt-4 p-5 sm:p-6">
             <h2 id="session-activity" tabIndex={-1} className="text-xl font-semibold">Activité de la session</h2>
             <p className="mt-1 text-sm text-stone-700">{run.search.product} · {run.search.market} · {run.search.role}</p>
@@ -482,7 +503,7 @@ function App() {
         {run && leads.length > 0 && (
           <section aria-labelledby="results-heading" className="mt-6">
             <div className="mb-4">
-              <h2 id="results-heading" tabIndex={-1} className="text-xl font-semibold">Prospects de la session</h2>
+              <h2 id="results-heading" tabIndex={-1} className="text-xl font-semibold">{run.mode === 'prepared' ? 'Prospects de la sélection' : 'Prospects de la session'}</h2>
               <p className="mt-1 text-sm text-slate-600">Sélectionnez un résultat pour consulter ses preuves et enregistrer votre décision.</p>
             </div>
             <div className="surface mb-4 p-4">

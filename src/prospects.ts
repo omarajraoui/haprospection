@@ -10,6 +10,7 @@ export type Evidence = {
   manual?: boolean
   live?: boolean
   sourceType?: string
+  paraphrased?: boolean
   field: string
   source: string
   url: string
@@ -21,7 +22,7 @@ export type Lead = {
   id: string
   name: string
   contact: string | null
-  status: 'corroborated' | 'missing' | 'conflict' | 'unverified'
+  status: 'corroborated' | 'missing' | 'conflict' | 'unverified' | 'documented'
   reason: string
   evidence: Evidence[]
 }

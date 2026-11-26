@@ -4,13 +4,15 @@ Run this walkthrough after the MVP is installed from the tagged client release. 
 
 ## Installation walkthrough
 
-1. Configure the search provider, then launch the canned-fish mission. Open the session activity and check the query and page outcomes.
+1. Open **Prospects** and inspect the prepared canned-fish selection. Check both the registry entry and company page on each lead.
 2. Open the resulting leads and inspect the linked evidence. Approve only leads whose identity and activity you can verify. Flag or dismiss questionable leads and record a reason.
 3. Attach a real supporting source to an approved lead and check that it returns to review. Approve it again after checking the source, set a follow-up owner and date, and export it.
-4. Open the workbook in Excel. Match the **Leads** and **Evidence** tabs using **ID prospect** and confirm that the workbook identifies the session as a web search.
+4. Open the workbook in Excel. Match the **Leads** and **Evidence** tabs using **ID prospect** and confirm that the workbook identifies the session as a prepared selection.
 5. Stop and restart the app. Reopen the saved session and verify that the review reasons, evidence, and follow-up data remain available.
 
 ## Live pilot
+
+Configure the search provider before starting the live comparisons. Open the activity log to check query and page outcomes.
 
 Pick three searches the sales rep would actually run. Candidate briefs are Moroccan canned fish for French importers, white rice suppliers in Senegal, and olive oil buyers in Spain. Use the same product, country, role and acceptance criteria for each live search and its manual comparison. Keep earlier results out of sight when running the second method.
 

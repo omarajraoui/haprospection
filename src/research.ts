@@ -17,7 +17,7 @@ export type Review = {
 export type Session = {
   id: string
   search: Search
-  mode: 'live'
+  mode: 'live' | 'prepared'
   retried?: boolean
   tasks?: {
     kind: 'search' | 'page'

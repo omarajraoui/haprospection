@@ -1,5 +1,11 @@
 # Release notes
 
+## v1.0.0-rc.3
+
+The app opens on a prepared, sourced selection. The first release snapshot contains two French canned-fish importers with legal identity checked using the public French company-search API and product range documented by their company sites. The snapshot is available without a Brave key. New web searches are optional.
+
+Verified initial import into an empty SQLite database, evidence links, Excel export, and review persistence after restart. The initial catalogue is a dated snapshot.
+
 ## v1.0.0-rc.2
 
 Prepared research missions, separate workspaces, and result filters simplify the operator workflow. Resources and evidence identify the role of each source, including in Excel.

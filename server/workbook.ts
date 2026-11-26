@@ -19,12 +19,12 @@ export async function shortlistWorkbook(sessions: Session[]) {
     leads.addRow([
       id, lead.name, session.search.product, session.search.market, session.search.role, lead.contact ?? '',
       review?.reason, review?.reviewedAt, followUp?.owner, followUp?.date,
-      'Recherche web',
+      session.mode === 'prepared' ? 'Sélection préparée' : 'Recherche web',
     ])
     for (const claim of lead.evidence) {
       evidence.addRow([
         id, claim.field, claim.source, claim.url, claim.excerpt,
-        claim.observedAt, claim.manual ? 'Saisie manuelle' : 'Page consultée',
+        claim.observedAt, claim.manual ? 'Saisie manuelle' : claim.paraphrased ? 'Synthèse de la source' : 'Source consultée',
         sourceKinds[sourceKind(claim.url, claim.sourceType)].label,
       ])
     }
