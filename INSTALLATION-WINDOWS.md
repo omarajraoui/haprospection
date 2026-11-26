@@ -48,13 +48,13 @@ Si le navigateur ne s’ouvre pas, copiez l’adresse affichée dans le terminal
 3. Ouvrez **Liste prioritaire**, puis cliquez sur **Exporter Excel**. Le fichier `ha-prospection.xlsx` arrive dans **Téléchargements**. Dans Excel, ouvrez les onglets **Leads** et **Evidence** pour retrouver le prospect et ses sources.
 4. Si cette approbation était un essai, rouvrez la fiche et enregistrez votre véritable décision.
 
-La sélection préparée fonctionne dès l’installation. Pour lancer une **Nouvelle recherche** sur Internet, une clé Brave Search doit être configurée. Cette étape est facultative. [Configuration de la recherche web](README.md#enable-live-web-discovery)
+La sélection préparée fonctionne dès l’installation. Pour lancer une **Nouvelle recherche** sur Internet, une clé Brave Search doit être configurée. Cette étape est facultative. [Configuration de la recherche web](README.md#activer-la-recherche-web)
 
 ## 6. Fermer et rouvrir l’app
 
 Pour arrêter l’app, revenez au terminal et appuyez sur **Ctrl+C**. Si Windows demande de confirmer, suivez l’invite. La prochaine fois, ouvrez le terminal dans le même dossier et tapez uniquement `npm.cmd start`.
 
-Les décisions restent enregistrées. Le terminal indique le dossier des données et du journal. L’emplacement par défaut est `%LOCALAPPDATA%\HA Prospection`. Vous pouvez coller ce chemin dans la barre d’adresse de l’Explorateur. Consultez les [instructions de sauvegarde](README.md#local-data-and-backup) avant une mise à jour.
+Les décisions restent enregistrées. Le terminal indique le dossier des données et du journal. L’emplacement par défaut est `%LOCALAPPDATA%\HA Prospection`. Vous pouvez coller ce chemin dans la barre d’adresse de l’Explorateur. Consultez les [instructions de sauvegarde](README.md#données-locales-et-sauvegarde) avant une mise à jour.
 
 ## Dépannage
 

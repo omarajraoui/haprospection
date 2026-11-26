@@ -1,75 +1,45 @@
 # HA Prospection
 
-HA Prospection aide votre équipe à trouver des entreprises agroalimentaires, à vérifier leurs sources et à exporter la liste des prospects retenus.
+HA Prospection vous aide à repérer des acheteurs et fournisseurs agroalimentaires, à consulter les sources de chaque fiche et à préparer une liste de prospects à contacter.
 
-## Commencer sur Windows
+## Que faire à la première ouverture ?
 
-1. Lisez le [guide d’installation Windows](INSTALLATION-WINDOWS.md). Il vous accompagne depuis le téléchargement de Node.js jusqu’au premier export Excel.
-2. Une fois l’app ouverte, choisissez **Prospects** pour consulter la sélection préparée, **Liste prioritaire** pour retrouver vos prospects approuvés et **Mode d’emploi** si vous souhaitez revoir le parcours.
+1. Dans **Prospects**, consultez la sélection préparée. Elle contient deux entreprises françaises dans le secteur des conserves de poisson. Chaque fiche indique les sources utilisées pour documenter l’identité de l’entreprise et sa gamme.
+2. Utilisez les filtres de revue ou le champ de recherche pour retrouver une entreprise ou une source. Ouvrez une fiche et lisez les **Éléments de preuve** avant de décider.
+3. Dans **Décision de revue**, choisissez **Approuver**, **Signaler** ou **Écarter**, saisissez un motif et enregistrez la décision. Une approbation ajoute l’entreprise à la **Liste prioritaire**.
+4. Dans **Liste prioritaire**, renseignez si besoin le responsable et la date de relance. Cliquez sur **Exporter Excel** pour télécharger la liste complète des prospects approuvés. Les onglets **Leads** et **Evidence** utilisent le même identifiant pour relier chaque entreprise à ses sources.
+5. Si vous trouvez une source utile, ajoutez-la dans **Ressources**, puis ouvrez la fiche et choisissez **Rattacher une source**. Si le prospect était approuvé, examinez de nouveau la fiche avant de l’exporter.
 
-Le **README** présente le projet et indique où trouver l’aide. Le **guide Windows** est le document à suivre pour installer l’app sur votre PC. Un navigateur et Node.js suffisent pour le parcours local. Le guide Vercel ci-dessous concerne l’administration de la version hébergée.
+La sélection est disponible dès l’ouverture. Les dates de consultation figurent dans les fiches. Confirmez l’intérêt de l’entreprise pour votre offre et identifiez le bon interlocuteur avant de la contacter.
 
-## Hosted version
+## Installer sur votre PC Windows
 
-The hosted setup uses Vercel for the app and Supabase for Postgres and sign-in. The client opens the HTTPS address and sees the prepared catalogue after signing in. See the [Vercel deployment guide](DEPLOYMENT.md) for administrator setup.
+Suivez le [guide d’installation Windows](INSTALLATION-WINDOWS.md). Il détaille l’installation de Node.js, le téléchargement du ZIP, l’ouverture de PowerShell et le premier démarrage. Un navigateur et Node.js suffisent. Vous pouvez utiliser la sélection préparée, enregistrer vos décisions et exporter sans clé Brave Search.
 
-## Install and start locally
+### Commandes d’installation et de démarrage
 
-The MVP release candidate is `v1.0.0-rc.4`. Install Node.js 22.12 or later with npm, then download and extract the source archive for this version. An internet connection is needed for the first dependency install. Open a terminal in the extracted folder and run:
+La version candidate est `v1.0.0-rc.4`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
 
-```sh
-npm ci
-npm run build
-npm start
+```powershell
+npm.cmd ci
+npm.cmd run build
+npm.cmd start
 ```
 
-On Windows PowerShell, use `npm.cmd` in place of `npm` if a local policy blocks the PowerShell shim. On each later launch, run `npm start` from the same folder. The launcher opens the app in your browser at `http://127.0.0.1:4173/`. Keep the terminal open while using the app. Press Ctrl+C in the terminal to stop it. If the browser fails to open, copy the printed address into your browser.
+Sur macOS ou Linux, utilisez `npm` à la place de `npm.cmd`. L’app s’ouvre normalement à l’adresse `http://127.0.0.1:4173/`. Gardez le terminal ouvert pendant l’utilisation. Pour arrêter l’app, appuyez sur **Ctrl+C**. Pour la rouvrir, exécutez simplement la dernière commande dans le même dossier.
 
-## Try the MVP
+## Activer la recherche web
 
-Use **Prospects** to open the prepared selection or start or reopen a search, **Liste prioritaire** for approved leads, and **Ressources** for supporting sources. **Mode d’emploi** explains the workflow inside the app.
+La recherche web est facultative. Demandez à votre contact de configurer une clé [Brave Search](https://api-dashboard.search.brave.com/) dans la variable d’environnement `BRAVE_SEARCH_API_KEY`, puis redémarrez l’app. Gardez la clé hors du dépôt et des captures d’écran.
 
-1. Open **Prospects**. The prepared selection is loaded from the release and can be reviewed without a Brave key. Choose **Nouvelle recherche** for prepared missions and custom criteria when web search is configured.
-2. Under **Prospects de la sélection**, type a company, contact or source. The review buttons and **État des preuves** combine with that search. Use **Réinitialiser** to see every result again. Open each lead to inspect its evidence. **Activité de la session** shows what ran in the background.
-3. Under **Décision de revue**, select **Approuver**, **Signaler** or **Écarter**, enter a reason, and save. Only approved leads appear in **Liste prioritaire**.
-4. For a web search that finishes partially, open **Activité de la session** to see failed sources. Completed results remain available.
-5. Open **Ressources**, name a source, enter its URL and select its type. In a lead’s **Rattacher une source** section, select it, enter the claim, a supporting excerpt and the observation date, then save. If the lead was approved, review it again before exporting.
-6. In **Liste prioritaire**, enter a responsible person and follow-up date and click **Enregistrer le suivi**. The shortlist search narrows the screen by company, product, market or owner. Click **Exporter Excel** to download the full approved list as `ha-prospection.xlsx`. The **Leads** and **Evidence** tabs share an `ID prospect` column for matching rows.
-7. Restart the app and use **Sessions enregistrées** to reopen an earlier session and check its decisions and evidence.
+Sur Windows, ouvrez PowerShell dans le dossier de l’app et saisissez la clé dans l’invite sécurisée.
 
-The client workspace uses real sources for the prepared selection and all searches. Earlier sample sessions are excluded from history and export. Read the [pilot walkthrough](PILOT.md) for the full acceptance test.
-
-## Local data and backup
-
-The launcher prints the data folder and log path. By default, Windows uses `%LOCALAPPDATA%\HA Prospection`, macOS uses `~/Library/Application Support/HA Prospection`, and Linux uses `$XDG_DATA_HOME/ha-prospection` or `~/.local/share/ha-prospection`. The database is `prospection.sqlite` and the log is `app.log`. Set `HAPROSPECTION_DATA_DIR` before running the launcher or data commands to use a different directory.
-
-Stop the app before restoring or upgrading. Run these commands from the release folder, using a backup path you can access. The backup command requires a new filename. The restore command saves any current data to a separate `before-restore-*.sqlite` file before replacing it.
-
-```sh
-npm run backup -- "./ha-backup.sqlite"
-npm run restore -- "./ha-backup.sqlite"
+```powershell
+$env:BRAVE_SEARCH_API_KEY = [System.Net.NetworkCredential]::new("", (Read-Host "Clé Brave Search" -AsSecureString)).Password
+npm.cmd start
 ```
 
-Keep backups outside the source checkout and Git, for example by passing a full path on a backup drive. Start the app after restoration and confirm that a known session opens.
-
-### Upgrade or roll back
-
-1. Stop the old version and create a backup.
-2. Extract the new tagged release into a new folder. Run `npm ci`, `npm run build`, and `npm start` there. Reuse the same data directory. The app applies database changes on launch.
-3. Verify the version in the app footer, reopen a known session, and check the shortlist.
-4. If you need to roll back, stop the new version and restore the pre-upgrade backup before launching the previous release.
-
-Earlier development builds wrote to `data/prospection.sqlite` inside the checkout. To bring it forward, stop the development server, then pass the full path of that database to the release's restore command. Development with `npm run dev` continues to use the checkout’s `data` folder by default.
-
-## Prepared selection
-
-The first selection contains French importers of canned fish. Each record links to the French public registry and the company page supporting its product range. Registry checks use the [API Recherche d’entreprises](https://recherche-entreprises.api.gouv.fr/docs/). The company-page summaries are reviewed separately. Dates appear with each source and the operator decides whether to approve the lead.
-
-The release ships a snapshot. Each local database imports it once, so app restarts preserve any review decisions. To prepare a snapshot for a new installation, review the company pages listed in the catalogue script and run `npm run catalogue:prepare -- YYYY-MM-DD` using the date you reviewed them. The script checks the SIREN records through the public API before writing the snapshot. Operators do not need to run this command.
-
-## Enable live web discovery
-
-Get a Brave Search API key from the [Brave Search dashboard](https://api-dashboard.search.brave.com/). Set `BRAVE_SEARCH_API_KEY` in the environment of the terminal that launches HA Prospection. Keep the key out of Git and shared screenshots. On macOS or Linux, read it without displaying it in a Bash terminal:
+Sur macOS ou Linux, ces commandes sont prévues pour Bash.
 
 ```bash
 read -rs BRAVE_SEARCH_API_KEY
@@ -77,26 +47,41 @@ export BRAVE_SEARCH_API_KEY
 npm start
 ```
 
-In Windows PowerShell:
+Dans **Prospects**, cliquez sur **Nouvelle recherche**, choisissez une mission ou personnalisez le produit, le marché et le type d’entreprise. L’application utilise Brave pour trouver des liens, lit les pages accessibles et présente les mentions de produits comme des pistes à examiner. Chaque session lance deux requêtes et traite jusqu’à dix pages. Les recherches peuvent être facturées selon votre offre Brave.
+
+Dans **Activité de la session**, ouvrez **Requêtes et pages consultées** pour voir les sources et les éventuels échecs. Si la recherche est partielle, les résultats déjà trouvés restent disponibles. Utilisez **Relancer les étapes en échec** pour réessayer une fois. Vérifiez l’identité, la gamme et la pertinence avant d’approuver un candidat.
+
+## Données locales et sauvegarde
+
+L’application indique le chemin de la base `prospection.sqlite` et du journal `app.log` au démarrage. Sous Windows, le dossier se trouve par défaut dans `%LOCALAPPDATA%\HA Prospection`. Sous macOS, il se trouve dans `~/Library/Application Support/HA Prospection`. Sous Linux, il se trouve dans `$XDG_DATA_HOME/ha-prospection` ou `~/.local/share/ha-prospection`. La variable `HAPROSPECTION_DATA_DIR` permet de choisir un autre emplacement.
+
+Arrêtez l’application avant de restaurer une sauvegarde ou de changer de version. Exécutez les commandes depuis le dossier de l’application. Remplacez le chemin par un emplacement de sauvegarde hors du dossier du projet.
 
 ```powershell
-$env:BRAVE_SEARCH_API_KEY = [System.Net.NetworkCredential]::new("", (Read-Host "Brave Search API key" -AsSecureString)).Password
-npm start
+npm.cmd run backup -- "C:\Sauvegardes\ha-prospection.sqlite"
+npm.cmd run restore -- "C:\Sauvegardes\ha-prospection.sqlite"
 ```
 
-Restart the app if it was already running. The prepared missions are enabled when the key is configured. **Requêtes et pages consultées** lists the queries and page outcomes. If part of the run fails, **Relancer les étapes en échec** retries only those steps once and keeps results already collected.
+Créez le dossier de sauvegarde s’il manque et choisissez un nom de fichier disponible lors de la sauvegarde. La restauration crée d’abord une copie de vos données actuelles dans un fichier `before-restore-*.sqlite`. Après restauration, ouvrez l’application et vérifiez qu’une session connue s’affiche.
 
-Brave provides search result URLs. HA Prospection reads the returned pages, records excerpts, and presents candidates for human review. Each session starts with two Brave queries and processes up to ten distinct HTTPS pages. One retry can repeat failed requests. Brave usage is charged according to the client’s plan. The local app sends the search inputs to Brave and stores results and supporting excerpts on the PC.
+### Mettre à jour l’application
 
-Live candidates come from a conservative product-term match against readable pages. Known directories and registries stay in the source log as discovery or verification resources. The app skips creating company candidates for those domains. Check the linked page, company identity, market and role before approving. Contact fields stay blank for live candidates. Access failures, redirects and non-HTML pages are recorded in the session. Previously saved web sessions remain available without a key.
+1. Arrêtez l’application et sauvegardez vos données.
+2. Extrayez la nouvelle version dans un autre dossier, puis exécutez les trois commandes d’installation depuis ce dossier. Si vous aviez personnalisé le dossier de données, utilisez le même emplacement.
+3. Vérifiez la version affichée et rouvrez un prospect connu. Pour revenir à la version précédente, arrêtez l’app et restaurez la sauvegarde réalisée avant la mise à jour.
 
-## Troubleshooting
+Les anciennes versions de développement stockaient la base dans `data/prospection.sqlite` à l’intérieur du projet. Pour récupérer cette base, arrêtez le serveur de développement et indiquez son chemin complet à la commande de restauration de la version installée.
 
-- If the port is already in use, stop the other instance or set `HAPROSPECTION_PORT` to an unused port before launching. Use the address printed by the launcher.
-- If the launcher reports that the data folder is in use, stop the other launcher or restore command. After an abrupt shutdown, remove `release.lock` from the data folder only after confirming the local app and its server process have stopped.
-- If web search is disabled, set the Brave key in the same terminal and restart. Previously saved web sessions remain available.
-- If an error persists, check the log path in the terminal or the app footer. Keep client data and credentials out of support messages.
+## En cas de problème
 
-## Release information
+- Si une commande est introuvable ou si le navigateur n’affiche rien, consultez la rubrique **Dépannage** du [guide Windows](INSTALLATION-WINDOWS.md).
+- Si le port est occupé, fermez l’autre instance ou définissez `HAPROSPECTION_PORT` avec un port libre avant de démarrer.
+- Si l’application signale que le dossier de données est occupé, fermez l’autre instance ou attendez la fin de la restauration. Après un arrêt brutal, retirez le fichier `release.lock` uniquement après avoir confirmé que l’application et son serveur sont arrêtés.
+- Si le problème persiste, transmettez à votre contact le numéro de l’étape et le message d’erreur affiché.
 
-See the [release notes](CHANGELOG.md), [pilot walkthrough](PILOT.md), and [technical requirements](TRD.md).
+## Documentation technique
+
+- [Déploiement Vercel et Supabase](DEPLOYMENT.md) pour l’administration de la version hébergée.
+- [Parcours de test](PILOT.md), [notes de version](CHANGELOG.md) et [exigences techniques](TRD.md).
+
+La sélection initiale est un relevé daté. Les identités ont été contrôlées via l’[API Recherche d’entreprises](https://recherche-entreprises.api.gouv.fr/docs/) et les gammes ont été documentées à partir des sites des entreprises. Pour préparer un nouveau relevé destiné à une future installation, vérifiez les pages de la sélection puis lancez `npm run catalogue:prepare -- AAAA-MM-JJ` avec la date de consultation. Chaque base locale importe la sélection une seule fois et conserve ses décisions.
