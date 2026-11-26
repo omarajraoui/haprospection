@@ -2,9 +2,13 @@
 
 HA Prospection is a proposed desktop-local web app for agroalimentaire sales teams. It helps a rep find buyers or suppliers, check the evidence behind each company, and export a reviewed shortlist to Excel.
 
-## Install and start
+## Hosted version
 
-The MVP release candidate is `v1.0.0-rc.3`. Install Node.js 22.12 or later with npm, then download and extract the source archive for this version. An internet connection is needed for the first dependency install. Open a terminal in the extracted folder and run:
+The hosted setup uses Vercel for the app and Supabase for Postgres and sign-in. The client opens the HTTPS address and sees the prepared catalogue after signing in. See the [Vercel deployment guide](DEPLOYMENT.md) for administrator setup.
+
+## Install and start locally
+
+The MVP release candidate is `v1.0.0-rc.4`. Install Node.js 22.12 or later with npm, then download and extract the source archive for this version. An internet connection is needed for the first dependency install. Open a terminal in the extracted folder and run:
 
 ```sh
 npm ci

@@ -12,11 +12,7 @@ import { discoveryTasks, retryFailedTasks } from './discovery.ts'
 import { discoveryWorker } from './discovery-worker.ts'
 import { shortlistWorkbook } from './workbook.ts'
 
-class RequestError extends Error {
-  constructor(readonly status: number, message: string) {
-    super(message)
-  }
-}
+import { dateField, field, RequestError, sourceUrl } from './validation.ts'
 
 async function readJson(request: IncomingMessage) {
   const origin = request.headers.origin
@@ -45,34 +41,6 @@ async function readJson(request: IncomingMessage) {
     // Invalid JSON receives the same response as a non-object value.
   }
   throw new RequestError(400, 'Requête JSON invalide.')
-}
-
-function field(value: unknown, maximum: number) {
-  if (typeof value !== 'string' || !value.trim() || value.trim().length > maximum) {
-    throw new RequestError(400, `Saisissez une valeur de 1 à ${maximum} caractères.`)
-  }
-  return value.trim()
-}
-
-function dateField(value: unknown, optional = false) {
-  if (optional && value === '') return ''
-  const date = field(value, 10)
-  const timestamp = Date.parse(date)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(timestamp)
-    || new Date(timestamp).toISOString().slice(0, 10) !== date) {
-    throw new RequestError(400, 'Saisissez une date valide.')
-  }
-  return date
-}
-
-function sourceUrl(value: unknown) {
-  try {
-    const url = new URL(field(value, 2048))
-    if (['http:', 'https:'].includes(url.protocol) && !url.username && !url.password) return url.href
-  } catch {
-    // Malformed URLs and unsupported URL schemes share the same message.
-  }
-  throw new RequestError(400, 'Saisissez une URL HTTP ou HTTPS valide.')
 }
 
 type SessionRow = {
@@ -158,6 +126,9 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
     try {
       if (!/^(?:127\.0\.0\.1|localhost)(?::[0-9]+)?$/.test(request.headers.host ?? '')) {
         throw new RequestError(403, 'Accès réservé à cette machine.')
+      }
+      if (path === '/api/auth/status' && request.method === 'GET') {
+        return send(200, { hosted: false, authenticated: true })
       }
       if (path === '/api/discovery' && request.method === 'GET') {
         return send(200, {

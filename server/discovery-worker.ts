@@ -1,17 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import type { DatabaseSync } from 'node:sqlite'
-import { sourceKind } from '../src/source-quality.ts'
-import type { Session } from '../src/research.ts'
-import { braveSearch, qualifyPage, readPublicPage, type Task } from './discovery.ts'
+import { discoveryProviders, processDiscoveryTask, type DiscoveryPayload } from './discovery-task.ts'
 
-type Payload = Omit<Session, 'id' | 'reviews' | 'followUps'> & {
-  tasks: Task[]
-  lease?: { token: string; expires: number }
-}
-
-export function discoveryWorker(database: DatabaseSync, key: string, providers = {
-  search: braveSearch, readPage: readPublicPage,
-}) {
+export function discoveryWorker(database: DatabaseSync, key: string, providers = discoveryProviders) {
   const queue = database.prepare(`
     SELECT id, payload FROM sessions
     WHERE json_extract(payload, '$.mode') = 'live'
@@ -27,7 +18,7 @@ export function discoveryWorker(database: DatabaseSync, key: string, providers =
     try {
       const row = queue.get(Date.now()) as { id: string; payload: string } | undefined
       if (!row) return
-      const payload = JSON.parse(row.payload) as Payload
+      const payload = JSON.parse(row.payload) as DiscoveryPayload
       const task = payload.tasks.find(item => item.state === 'queued')
       if (!task) return
 
@@ -35,35 +26,7 @@ export function discoveryWorker(database: DatabaseSync, key: string, providers =
       payload.lease = { token: randomUUID(), expires: Date.now() + 30_000 }
       const claimed = JSON.stringify(payload)
       if (!update.run(claimed, row.id, row.payload).changes) return
-      try {
-        if (task.kind === 'search') {
-          const urls = await providers.search(task.input, key)
-          const known = new Set(payload.tasks.filter(item => item.kind === 'page').map(item => item.input))
-          for (const input of urls) {
-            if (known.has(input) || known.size >= 10) continue
-            payload.tasks.push({ kind: 'page', input, state: 'queued' })
-            known.add(input)
-          }
-          task.detail = `${urls.length} page(s) retournée(s)`
-        } else {
-          const kind = sourceKind(task.input)
-          if (kind === 'directory' || kind === 'registry') {
-            task.detail = kind === 'directory' ? 'Annuaire : piste à recouper.' : 'Registre : à consulter pour vérifier une entreprise.'
-          } else {
-            const lead = qualifyPage(task.input, await providers.readPage(task.input), payload.search.product, payload.search.role)
-            if (lead) {
-              const existing = payload.leads.find(item => item.id === lead.id)
-              // The first readable URL remains the evidence of record for this candidate.
-              if (!existing) payload.leads.push(lead)
-            }
-            task.detail = lead ? 'Mention pertinente trouvée' : 'Aucune mention exploitable'
-          }
-        }
-        task.state = 'complete'
-      } catch (error) {
-        task.state = 'failed'
-        task.detail = error instanceof Error ? error.message.slice(0, 180) : 'Source indisponible'
-      }
+      await processDiscoveryTask(payload, task, key, providers)
       delete payload.lease
       if (!stopped) update.run(JSON.stringify(payload), row.id, claimed)
     } catch (error) {

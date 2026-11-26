@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useState, type FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import { defaultSearch, type Lead, type Search } from './prospects'
-import { attachEvidence, createSession, createSource, discoveryConfig, loadSessions, loadSources, retryDiscovery, saveFollowUp, saveReview } from './api'
+import { accessStatus, signIn, signOut, type AccessStatus, attachEvidence, createSession, createSource, discoveryConfig, loadSessions, loadSources, retryDiscovery, saveFollowUp, saveReview } from './api'
 import { approvedLeads, decisions, type Decision, type EvidenceInput, type Review, type Session, type Source } from './research'
 import { EvidenceForm, FollowUpForm, Resources, inputClass } from './resources'
 import { matchesLead, searchable, type EvidenceFilter, type ReviewFilter } from './lead-filters'
@@ -169,7 +169,7 @@ function Guide({ onSearch }: { onSearch: () => void }) {
   )
 }
 
-function App() {
+function App({ hosted, onLogout }: { hosted: boolean; onLogout: () => void }) {
   const [section, setSection] = useState<Section>('research')
   const [showMissions, setShowMissions] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -328,9 +328,10 @@ function App() {
               {item === 'shortlist' && <span className="nav-count">{shortlist.length}</span>}
             </button>
           ))}
+          {hosted && <button type="button" className="workspace-link" onClick={onLogout}>Se déconnecter</button>}
         </nav>
         <div className="nav-footer">
-          <p>Données sur ce PC</p>
+          <p>{hosted ? 'Espace client privé' : 'Données sur ce PC'}</p>
           {configuration.version && <p>Version {configuration.version}</p>}
         </div>
       </aside>
@@ -607,4 +608,99 @@ function App() {
   )
 }
 
-createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)
+function Portal() {
+  const [status, setStatus] = useState<AccessStatus | null>(null)
+  const [problem, setProblem] = useState('')
+  const [checking, setChecking] = useState(true)
+  const [working, setWorking] = useState(false)
+
+  async function check() {
+    setChecking(true)
+    setProblem('')
+    try {
+      setStatus(await accessStatus())
+    } catch {
+      setProblem('L’espace est temporairement indisponible. Réessayez dans un instant.')
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  useEffect(() => {
+    void check()
+    const handleSessionEnded = () => {
+      setStatus({ hosted: true, authenticated: false })
+      setProblem('Votre session a expiré. Vous pouvez vous reconnecter.')
+    }
+    window.addEventListener('ha-session-ended', handleSessionEnded)
+    return () => window.removeEventListener('ha-session-ended', handleSessionEnded)
+  }, [])
+
+  async function connect(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (working) return
+    const form = new FormData(event.currentTarget)
+    setWorking(true)
+    setProblem('')
+    try {
+      await signIn(String(form.get('email')), String(form.get('password')))
+      setStatus({ hosted: true, authenticated: true })
+    } catch (error) {
+      setProblem(error instanceof Error ? error.message : 'Connexion indisponible.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  async function disconnect() {
+    if (working) return
+    setWorking(true)
+    setProblem('')
+    try {
+      await signOut()
+      setStatus({ hosted: true, authenticated: false })
+    } catch {
+      setProblem('La déconnexion a échoué. Réessayez.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  if (status?.authenticated) {
+    return <>
+      {problem && <p role="alert" className="p-4 text-center text-rose-800">{problem}</p>}
+      <App hosted={status.hosted} onLogout={() => void disconnect()} />
+    </>
+  }
+
+  return (
+    <main className="grid min-h-screen place-items-center bg-paper px-4 py-8">
+      <section className="surface w-full max-w-md p-6 sm:p-8" aria-labelledby="portal-title">
+        <div className="mb-5">
+          <span className="brand-mark mb-3" aria-hidden="true">HA</span>
+          <h1 id="portal-title" className="text-2xl font-semibold">HA Prospection</h1>
+          <p className="mt-2 text-slate-700">Accédez à votre espace de prospection.</p>
+        </div>
+        {checking ? <p role="status">Ouverture de l’espace…</p>
+          : status ? (
+            <form onSubmit={connect} className="space-y-4">
+              <fieldset disabled={working} className="space-y-4">
+                <label className="block text-sm font-semibold">Adresse e-mail
+                  <input name="email" type="email" className={inputClass} autoComplete="username" maxLength={254} required />
+                </label>
+                <label className="block text-sm font-semibold">Mot de passe
+                  <input name="password" type="password" className={inputClass} autoComplete="current-password" required />
+                </label>
+                <button className="primary-button w-full" type="submit">
+                  {working ? 'Connexion…' : 'Se connecter'}
+                </button>
+              </fieldset>
+            </form>
+          ) : <button className="primary-button" type="button" onClick={() => void check()}>Réessayer</button>}
+        {problem && <p role="alert" className="mt-4 text-sm text-rose-800">{problem}</p>}
+      </section>
+    </main>
+  )
+}
+
+createRoot(document.getElementById('root')!).render(<StrictMode><Portal /></StrictMode>)

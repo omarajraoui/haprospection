@@ -10,3 +10,5 @@ data/
 release/
 *.sqlite
 *.sqlite-*
+
+.vercel/

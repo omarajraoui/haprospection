@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "regions": ["cdg1"],
+  "functions": {
+    "api/research-worker.ts": { "maxDuration": 60 }
+  },
+  "rewrites": [
+    { "source": "/api/auth/:action", "destination": "/api/workspace?route=auth/:action" },
+    { "source": "/api/discovery", "destination": "/api/workspace?route=discovery" },
+    { "source": "/api/sessions", "destination": "/api/workspace?route=sessions" },
+    { "source": "/api/sessions/:path*", "destination": "/api/workspace?route=sessions/:path*" },
+    { "source": "/api/sources", "destination": "/api/workspace?route=sources" },
+    { "source": "/api/shortlist/export.xlsx", "destination": "/api/workspace?route=shortlist/export.xlsx" }
+  ],
+  "crons": [
+    { "path": "/api/research-worker", "schedule": "* * * * *" }
+  ]
+}

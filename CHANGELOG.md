@@ -1,5 +1,11 @@
 # Release notes
 
+## v1.0.0-rc.4
+
+Adds the hosted Vercel deployment configuration and a private browser sign-in. The hosted backend uses Supabase PostgreSQL and imports the prepared catalogue on first access. Local use remains available. Optional live searches run through a protected scheduled worker.
+
+The production build, Chromium sign-in flow, and API operations were verified using a real PostgreSQL test database and controlled authentication and search responses. A deployed Supabase and Vercel production smoke test still requires account access. See [deployment instructions](DEPLOYMENT.md).
+
 ## v1.0.0-rc.3
 
 The app opens on a prepared, sourced selection. The first release snapshot contains two French canned-fish importers with legal identity checked using the public French company-search API and product range documented by their company sites. The snapshot is available without a Brave key. New web searches are optional.
