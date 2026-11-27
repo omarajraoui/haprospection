@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.0-rc.11
+
+Le marché international affiche les familles de produits dès l’ouverture et intègre de nouvelles fiches pour les produits laitiers, les boissons et les noix. Le corridor est nommé Conserves · Maroc → France et donne accès au catalogue général.
+
 ## v1.0.0-rc.10
 
 L’accueil donne accès au catalogue des entreprises et aux demandes d’achat. La nouvelle vue interroge TED pour les produits agricoles et alimentaires et affiche les avis admissibles avec leur échéance et leur source. La sélection documentée s’enrichit de Yuly Food et d’AGT Foods.

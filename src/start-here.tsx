@@ -26,7 +26,7 @@ export function StartHere({ candidateCount, approvedCount, onFirstBuyer, onSearc
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" className="start-action" onClick={() => onSearch()}>Chercher une entreprise</button>
           <button type="button" className="rounded-lg border border-emerald-100/50 px-4 py-3 font-semibold hover:bg-white/10"
-            onClick={onCompare}>Marché Maroc → France</button>
+            onClick={onCompare}>Conserves · Maroc → France</button>
         </div>
       </section>
 

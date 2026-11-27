@@ -176,8 +176,8 @@ const reviewFilters = [
 ] as const
 
 const sections = {
-  home: 'Accueil',
-  corridor: 'Produits et acheteurs',
+  home: 'Marché international',
+  corridor: 'Conserves · Maroc → France',
   research: 'Prospects',
   shortlist: 'Suivi des prospects',
   resources: 'Ressources',
@@ -442,7 +442,10 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
         )}
 
         {section === 'corridor' && !loading && (
-          <CorridorView buyers={catalogue?.leads ?? []} onBuyer={openPreparedBuyer} />
+          <CorridorView buyers={catalogue?.leads ?? []} onBuyer={openPreparedBuyer} onMarket={() => {
+            navigate('home')
+            requestAnimationFrame(() => document.getElementById('world-heading')?.focus())
+          }} />
         )}
         {section === 'corridor' && loading && <p role="status">Ouverture du corridor…</p>}
         {section === 'corridor' && error && <p role="alert" className="mt-4 text-rose-800">{error}</p>}

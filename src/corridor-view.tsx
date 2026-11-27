@@ -124,7 +124,7 @@ function PublishedReferences({ references }: { references: ProductReference[] })
   )
 }
 
-export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id: string) => void }) {
+export function CorridorView({ buyers, onBuyer, onMarket }: { buyers: Lead[]; onBuyer: (id: string) => void; onMarket: () => void }) {
   const [view, setView] = useState<View>(views[0])
   const [product, setProduct] = useState<Product | ''>('')
   const [city, setCity] = useState('')
@@ -159,6 +159,10 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
         </button>
         {followed && <p className="text-sm text-emerald-100/85 sm:col-span-2">Le suivi et les nouveaux avis sont repérés dans ce navigateur.</p>}
       </section>
+      <div className="surface flex flex-wrap items-center justify-between gap-3 p-4">
+        <p className="text-sm text-slate-700">Cette vue couvre les conserves de poisson du corridor Maroc → France.</p>
+        <button type="button" className="secondary-button" onClick={onMarket}>Voir le catalogue international</button>
+      </div>
       <nav aria-label="Vues du corridor" className="flex flex-wrap gap-2">
         {views.map(tab => <button key={tab} type="button" onClick={() => setView(tab)}
           aria-pressed={view === tab} className="filter-pill">{tab}</button>)}
@@ -166,7 +170,7 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
 
       {(view === 'Offre marocaine' || view === 'Acheteurs en France') && (
         <section className="surface p-4 sm:p-5" aria-labelledby="product-filter-heading">
-          <h2 id="product-filter-heading" className="font-semibold">Quel produit voulez-vous proposer ?</h2>
+          <h2 id="product-filter-heading" className="font-semibold">Filtrer les conserves de poisson</h2>
           <p className="mt-1 text-sm text-slate-700">{view === 'Acheteurs en France'
             ? 'Choisissez par exemple Maquereaux pour afficher les entreprises qui en proposent dans leur catalogue.'
             : 'Choisissez un produit pour afficher les fabricants et les recettes qu’ils publient.'}</p>
@@ -176,7 +180,7 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
                 ? buyers.filter(buyer => referencesFor(buyer.id, item).length > 0).length
                 : suppliers.filter(supplier => !item || supplier.references.some(reference => reference.product === item)).length
               return <button key={item} type="button" className="filter-pill" aria-pressed={product === item}
-                onClick={() => setProduct(item)}>{item || 'Tous les produits'} <span>{count}</span></button>
+                onClick={() => setProduct(item)}>{item || 'Toutes les conserves'} <span className="ml-1 rounded-full bg-stone-100 px-2 text-slate-700">{count}</span></button>
             })}
           </div>
           {view === 'Offre marocaine' ? <label className="mt-4 block max-w-sm text-sm font-semibold">Ville de production · facultatif

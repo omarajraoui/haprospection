@@ -4,9 +4,9 @@ HA Prospection vous aide à repérer des acheteurs et fournisseurs agroalimentai
 
 ## Démarrer dans l’application
 
-Sur **Accueil**, **Fournisseurs et importateurs** permet de filtrer une première sélection internationale par produit, catégorie et pays d’activité. Les fiches renvoient aux sites des entreprises. **Demandes d’achat** affiche les avis agricoles et alimentaires récupérés auprès de TED. Le lien UNGM donne accès aux consultations des Nations Unies. **Élargir la recherche** reprend le produit et le pays dans le formulaire.
+Sur **Marché international**, **Fournisseurs et importateurs** permet de filtrer une première sélection internationale par produit, catégorie et pays d’activité. Les fiches renvoient aux sites des entreprises. **Demandes d’achat** affiche les avis agricoles et alimentaires récupérés auprès de TED. Le lien UNGM donne accès aux consultations des Nations Unies. **Élargir la recherche** reprend le produit et le pays dans le formulaire.
 
-Sur **Accueil**, cliquez sur **Examiner une fiche acheteur** pour essayer le parcours, ou ouvrez **Marché Maroc → France** pour explorer le corridor Maroc → France. Dans le corridor, choisissez **Offre marocaine**, **Acheteurs en France**, **Opportunités** ou **Organismes et marché**. Dans **Acheteurs en France**, choisissez **Maquereaux** pour afficher les prospects ayant du maquereau au catalogue, avec exemples de formats et liens vers les sources. La recherche par nom est facultative. Dans **Offre marocaine**, filtrez par produit et par ville. Sur une fiche de fournisseur, ouvrez un acheteur proposé pour consulter ses preuves et décider d’une prochaine action. Les rapprochements sont fondés sur les gammes publiées. Confirmez toujours le besoin, l’origine et les spécifications avec l’acheteur.
+Sur **Marché international**, cliquez sur **Examiner une fiche acheteur** pour essayer le parcours, ou ouvrez **Conserves · Maroc → France** pour explorer le corridor Maroc → France. Dans le corridor, choisissez **Offre marocaine**, **Acheteurs en France**, **Opportunités** ou **Organismes et marché**. Dans **Acheteurs en France**, choisissez **Maquereaux** pour afficher les prospects ayant du maquereau au catalogue, avec exemples de formats et liens vers les sources. La recherche par nom est facultative. Dans **Offre marocaine**, filtrez par produit et par ville. Sur une fiche de fournisseur, ouvrez un acheteur proposé pour consulter ses preuves et décider d’une prochaine action. Les rapprochements sont fondés sur les gammes publiées. Confirmez toujours le besoin, l’origine et les spécifications avec l’acheteur.
 
 **Opportunités** interroge TED pour les demandes d’achat publiques françaises du corridor. La vue affiche l’avis officiel et une échéance lorsque celle-ci est exploitable. Les agréments, conditions d’accès au marché et données agrégées sont accessibles depuis **Organismes et marché**. Le bouton **Suivre le corridor** repère les nouveaux avis au moment où vous ouvrez cette vue dans le même navigateur.
 
@@ -33,7 +33,7 @@ Suivez le [guide d’installation Windows](INSTALLATION-WINDOWS.md). Il détaill
 
 ### Commandes d’installation et de démarrage
 
-La version candidate est `v1.0.0-rc.10`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
+La version candidate est `v1.0.0-rc.11`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
 
 ```powershell
 npm.cmd ci
