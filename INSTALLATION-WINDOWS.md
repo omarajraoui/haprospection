@@ -44,8 +44,8 @@ Si le navigateur ne s’ouvre pas, copiez l’adresse affichée dans le terminal
 ## 5. Vérifier que tout fonctionne
 
 1. Dans **Prospects**, ouvrez une fiche de la sélection préparée et consultez les liens dans **Éléments de preuve**.
-2. Pour essayer la revue, ouvrez **Décision de revue**, choisissez **Approuver**, rédigez un motif et cliquez sur **Enregistrer la décision**.
-3. Ouvrez **Liste prioritaire**, puis cliquez sur **Exporter Excel**. Le fichier `ha-prospection.xlsx` arrive dans **Téléchargements**. Dans Excel, ouvrez les onglets **Leads** et **Evidence** pour retrouver le prospect et ses sources.
+2. Pour essayer la revue, ouvrez **Décision de revue**, choisissez **Retenir pour le suivi**, rédigez un motif et cliquez sur **Enregistrer la décision**.
+3. Ouvrez **Suivi des prospects**, puis cliquez sur **Exporter Excel**. Le fichier `ha-prospection.xlsx` arrive dans **Téléchargements**. Dans Excel, ouvrez les onglets **Leads** et **Evidence** pour retrouver le prospect et ses sources.
 4. Si cette approbation était un essai, rouvrez la fiche et enregistrez votre véritable décision.
 
 La sélection préparée fonctionne dès l’installation. Pour lancer une **Nouvelle recherche** sur Internet, une clé Brave Search doit être configurée. Cette étape est facultative. [Configuration de la recherche web](README.md#activer-la-recherche-web)

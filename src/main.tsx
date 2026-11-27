@@ -6,6 +6,7 @@ import { approvedLeads, canApproveLead, decisions, type Decision, type EvidenceI
 import { EvidenceForm, FollowUpForm, Resources, inputClass } from './resources'
 import { matchesLead, searchable, type EvidenceFilter, type ReviewFilter } from './lead-filters'
 import { sourceKind, sourceKinds } from './source-quality'
+import { StartHere } from './start-here'
 import { CorridorView } from './corridor-view'
 import { missions } from './missions'
 import './styles.css'
@@ -23,9 +24,10 @@ const dateTime = new Intl.DateTimeFormat('fr-FR', {
   day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
 })
 
-function ReviewForm({ review, approvalAllowed, onSave }: {
+function ReviewForm({ review, approvalAllowed, onSave, onFollowUp }: {
   review: Review | undefined
   approvalAllowed: boolean
+  onFollowUp: () => void
   onSave: (decision: Decision, reason: string) => Promise<void>
 }) {
   const [decision, setDecision] = useState<Decision | ''>(review?.decision ?? '')
@@ -56,6 +58,7 @@ function ReviewForm({ review, approvalAllowed, onSave }: {
   return (
     <form id="lead-review" tabIndex={-1} onSubmit={submit} className="mt-6 scroll-mt-4 rounded-lg border border-stone-200 p-4">
       <h4 className="text-lg font-semibold">Décision de revue</h4>
+      <p className="mt-1 text-sm text-slate-700">Retenez l’entreprise si elle correspond à votre offre. Elle apparaîtra dans votre suivi pour préparer la prochaine action.</p>
       {!approvalAllowed && <p className="mt-2 text-sm text-rose-800">Le registre indique une entreprise inactive. Signalez ou écartez la fiche.</p>}
       {review && (
         <p className="mt-1 break-words text-sm text-stone-700">
@@ -69,7 +72,7 @@ function ReviewForm({ review, approvalAllowed, onSave }: {
             setSaved(false)
           }}>
             <option value="" disabled>Choisir une décision</option>
-            <option value="approved" disabled={!approvalAllowed}>Approuver</option>
+            <option value="approved" disabled={!approvalAllowed}>Retenir pour le suivi</option>
             <option value="flagged">Signaler</option>
             <option value="dismissed">Écarter</option>
           </select>
@@ -84,17 +87,21 @@ function ReviewForm({ review, approvalAllowed, onSave }: {
       </fieldset>
       {error && <p role="alert" className="mt-2 text-sm text-rose-800">{error}</p>}
       {saved && <p role="status" className="mt-2 text-sm text-emerald-800">Décision enregistrée.</p>}
+      {review?.decision === 'approved' && (
+        <button type="button" className="secondary-button mt-3" onClick={onFollowUp}>Préparer une relance</button>
+      )}
     </form>
   )
 }
 
-function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
+function LeadDetail({ lead, review, sources, onSave, onAttach, onResources, onFollowUp }: {
   lead: Lead
   review: Review | undefined
   sources: Source[]
   onSave?: (decision: Decision, reason: string) => Promise<void>
   onAttach?: (input: EvidenceInput) => Promise<void>
   onResources: () => void
+  onFollowUp: () => void
 }) {
   const status = statusLabels[lead.status]
   const qualification = lead.qualification
@@ -111,9 +118,14 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
       <span className={`rounded-full px-3 py-1 text-sm font-medium ${status.style}`}>{status.label}</span>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <h3 id="lead-name" tabIndex={-1} className="text-2xl font-semibold">{lead.name}</h3>
-        {onSave && <a href="#lead-review" className="secondary-button inline-flex items-center">
-          {review ? 'Modifier la décision' : 'Enregistrer une décision'}
-        </a>}
+        <div className="flex flex-wrap gap-2">
+          {onSave && <a href="#lead-review" className="secondary-button inline-flex items-center">
+            {review ? 'Modifier la décision' : 'Donner ma décision'}
+          </a>}
+          {review?.decision === 'approved' && (
+            <button type="button" className="primary-button" onClick={onFollowUp}>Voir mon suivi</button>
+          )}
+        </div>
       </div>
       <p className="mt-2 text-stone-700">{lead.reason}</p>
       {qualification && (
@@ -154,19 +166,20 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
         })}
       </ul>
       {onAttach && <EvidenceForm sources={sources} onAttach={onAttach} onResources={onResources} />}
-      {onSave && <ReviewForm key={lead.evidence.length} review={review} approvalAllowed={canApproveLead(lead)} onSave={onSave} />}
+      {onSave && <ReviewForm key={lead.evidence.length} review={review} approvalAllowed={canApproveLead(lead)} onSave={onSave} onFollowUp={onFollowUp} />}
     </article>
   )
 }
 
 const reviewFilters = [
-  ['all', 'Tous'], ['pending', 'À examiner'], ['approved', 'Approuvés'], ['flagged', 'Signalés'], ['dismissed', 'Écartés'],
+  ['all', 'Tous'], ['pending', 'À examiner'], ['approved', 'Retenus'], ['flagged', 'Signalés'], ['dismissed', 'Écartés'],
 ] as const
 
 const sections = {
-  corridor: 'Corridor commercial',
+  home: 'Accueil',
+  corridor: 'Produits et acheteurs',
   research: 'Prospects',
-  shortlist: 'Liste prioritaire',
+  shortlist: 'Suivi des prospects',
   resources: 'Ressources',
   guide: 'Mode d’emploi',
 } as const
@@ -184,7 +197,7 @@ function Guide({ onSearch }: { onSearch: () => void }) {
         <li><strong>Ouvrir la sélection.</strong> Les premières fiches sont disponibles dès l’ouverture. <em>Nouvelle recherche</em> permet d’élargir la sélection avec une mission ou vos propres critères lorsque le service web est connecté.</li>
         <li><strong>Filtrer les résultats.</strong> Tapez un nom, un contact ou une source. Cliquez sur <em>À examiner</em> pour afficher les décisions en attente. Le filtre <em>État des preuves</em> permet par exemple d’isoler les contacts manquants.</li>
         <li><strong>Examiner une fiche.</strong> Ouvrez les extraits et leurs sources. Ajoutez une source depuis <em>Ressources</em>, puis rattachez-la à la fiche si nécessaire.</li>
-        <li><strong>Décider et exporter.</strong> Approuvez, signalez ou écartez le prospect avec un motif. Les prospects approuvés vont dans la liste prioritaire pour le suivi et l’export Excel.</li>
+        <li><strong>Décider et exporter.</strong> Approuvez, signalez ou écartez le prospect avec un motif. Les prospects approuvés vont dans la suivi des prospects pour préparer les relances et exporter vers Excel.</li>
       </ol>
       <p className="border-t border-slate-200 pt-4 text-sm text-slate-600">Dans <strong>Activité de la session</strong>, suivez la découverte des pages et la qualification des candidats. La recherche web repère des mentions du produit et montre les extraits. Vous confirmez l’identité et le profil commercial de l’entreprise avant de l’approuver.</p>
       <button type="button" className="primary-button" onClick={onSearch}>Ouvrir la recherche</button>
@@ -193,7 +206,7 @@ function Guide({ onSearch }: { onSearch: () => void }) {
 }
 
 function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPreview: boolean; onLogout: () => void }) {
-  const [section, setSection] = useState<Section>('corridor')
+  const [section, setSection] = useState<Section>('home')
   const [showMissions, setShowMissions] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [query, setQuery] = useState('')
@@ -296,6 +309,14 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
     window.scrollTo(0, 0)
   }
 
+  function openPreparedBuyer(preferredId?: string) {
+    const candidate = preferredId ?? catalogue?.leads[0]?.id
+    if (!catalogue || !candidate) return
+    openSession(catalogue, candidate)
+    navigate('research')
+    focusLead()
+  }
+
   function resetFilters() {
     setQuery('')
     setReviewFilter('all')
@@ -375,7 +396,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
       </aside>
 
       <main className="workspace-main">
-        <header className="page-header">
+        {section !== 'home' && <header className="page-header">
           <div>
             <h1>{section === 'research' ? 'Prospects' : sections[section]}</h1>
             <p>{{
@@ -399,21 +420,23 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
               </button>
             </div>
           )}
-        </header>
+        </header>}
+
+        {section === 'home' && (
+          <StartHere candidateCount={catalogue?.leads.length ?? 0} approvedCount={shortlist.length}
+            onFirstBuyer={() => openPreparedBuyer()} onCompare={() => navigate('corridor')}
+            onFollowUp={() => navigate('shortlist')} />
+        )}
+        {section === 'home' && error && <p role="alert" className="mt-4 text-rose-800">{error}</p>}
 
         {browserPreview && (
-          <p className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-950">
+          <p className={`${section === 'home' ? 'mt-5' : 'mb-4'} rounded-lg bg-emerald-50 p-3 text-sm text-emerald-950`}>
             Espace sans connexion. Les décisions et les sources ajoutées sont enregistrées dans ce navigateur.
           </p>
         )}
 
         {section === 'corridor' && !loading && (
-          <CorridorView buyers={catalogue?.leads ?? []} onBuyer={id => {
-            if (!catalogue) return
-            openSession(catalogue, id)
-            navigate('research')
-            focusLead()
-          }} />
+          <CorridorView buyers={catalogue?.leads ?? []} onBuyer={openPreparedBuyer} />
         )}
         {section === 'corridor' && loading && <p role="status">Ouverture du corridor…</p>}
         {section === 'corridor' && error && <p role="alert" className="mt-4 text-rose-800">{error}</p>}
@@ -604,7 +627,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
                   </li>
                 })}
               </ul>
-              <LeadDetail key={`${run.id}/${activeLead.id}`} lead={activeLead} review={run.reviews[activeLead.id]} sources={sources} onResources={() => navigate('resources')}
+              <LeadDetail key={`${run.id}/${activeLead.id}`} lead={activeLead} review={run.reviews[activeLead.id]} sources={sources} onResources={() => navigate('resources')} onFollowUp={() => navigate('shortlist')}
                 onAttach={running ? undefined : async input => updateSession(await attachEvidence(run.id, activeLead.id, input))}
                 onSave={running ? undefined : async (decision, reason) => updateSession(await saveReview(run.id, activeLead.id, decision, reason))} />
             </div> : <p className="surface p-5 text-slate-700">Aucun prospect ne correspond à ces filtres.</p>}
@@ -613,7 +636,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
         </>}
         {section === 'shortlist' && <section aria-labelledby="shortlist-heading" className="surface mt-4 p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 id="shortlist-heading" className="text-xl font-semibold">Prospects approuvés ({shortlist.length})</h2>
+            <h2 id="shortlist-heading" className="text-xl font-semibold">Prospects retenus ({shortlist.length})</h2>
             {shortlist.length > 0 && (browserPreview
               ? <button type="button" disabled={exporting} className="primary-button" onClick={() => void exportFromBrowser()}>
                   {exporting ? 'Export en cours…' : 'Exporter Excel'}
@@ -627,7 +650,11 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
             <span className="mt-2 block font-normal text-slate-600">{visibleShortlist.length} résultat(s) sur {shortlist.length} · L’export inclut toute la liste.</span>
           </label>}
           {shortlist.length === 0 ? (
-            <p className="mt-2 text-stone-700">Les prospects approuvés apparaîtront ici.</p>
+            <div className="mt-3">
+              <p className="text-stone-700">Retenez un acheteur depuis sa fiche pour le retrouver ici et fixer une relance.</p>
+              <button type="button" className="secondary-button mt-3" disabled={!catalogue?.leads.length}
+                onClick={() => openPreparedBuyer()}>Examiner un premier acheteur</button>
+            </div>
           ) : visibleShortlist.length === 0 ? (
             <p className="mt-4 text-slate-700">Aucun prospect ne correspond à ce filtre.</p>
           ) : (

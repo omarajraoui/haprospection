@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.0-rc.6
+
+L’accueil explique le résultat attendu et propose un accès direct à une première fiche acheteur. Le parcours accompagne ensuite la vérification, la décision et la relance. La vue Suivi des prospects permet de retrouver les entreprises retenues et d’exporter la liste.
+
 ## v1.0.0-rc.5
 
 - Le site s’ouvre sur le corridor Maroc → France pour les conserves de poisson. La sélection relie des fournisseurs marocains documentés aux acheteurs français par produit, avec les preuves et les vérifications à faire.

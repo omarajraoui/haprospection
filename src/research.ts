@@ -1,7 +1,7 @@
 import type { Lead, Search } from './prospects'
 
 export const decisions = {
-  approved: 'Approuvé',
+  approved: 'Retenu',
   flagged: 'Signalé',
   dismissed: 'Écarté',
 } as const
