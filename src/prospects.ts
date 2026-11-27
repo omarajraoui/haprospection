@@ -18,11 +18,20 @@ export type Evidence = {
   observedAt: string
 }
 
+export type Qualification = {
+  identity: 'pending' | 'verified' | 'unverified' | 'conflict'
+  siren?: string
+  roleMention: boolean
+  marketMention: boolean
+  origin?: { requested: string; mentioned: boolean }
+}
+
 export type Lead = {
   id: string
   name: string
   contact: string | null
-  status: 'corroborated' | 'missing' | 'conflict' | 'unverified' | 'documented'
+  qualification?: Qualification
+  status: 'corroborated' | 'missing' | 'conflict' | 'unverified' | 'documented' | 'identity-verified'
   reason: string
   evidence: Evidence[]
 }

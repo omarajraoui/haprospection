@@ -14,18 +14,25 @@ export type Review = {
   reviewedAt: string
 }
 
+export type DiscoveryTask = {
+  kind: 'search' | 'page' | 'registry'
+  input: string
+  leadId?: string
+  state: 'queued' | 'complete' | 'failed'
+  attempts?: number
+  detail?: string
+}
+
+export function canApproveLead(lead: Lead) {
+  return lead.qualification?.identity !== 'conflict'
+}
+
 export type Session = {
   id: string
   search: Search
   mode: 'live' | 'prepared'
   retried?: boolean
-  tasks?: {
-    kind: 'search' | 'page'
-    input: string
-    state: 'queued' | 'complete' | 'failed'
-    attempts?: number
-    detail?: string
-  }[]
+  tasks?: DiscoveryTask[]
   createdAt: string
   leads: Lead[]
   reviews: Record<string, Review | undefined>
@@ -54,7 +61,7 @@ export type EvidenceInput = {
 
 export function approvedLeads(sessions: Session[]) {
   return sessions.flatMap(session =>
-    session.leads.filter(lead => session.reviews[lead.id]?.decision === 'approved')
+    session.leads.filter(lead => canApproveLead(lead) && session.reviews[lead.id]?.decision === 'approved')
       .map(lead => ({ session, lead })),
   )
 }

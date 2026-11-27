@@ -2,7 +2,13 @@
 
 HA Prospection vous aide à repérer des acheteurs et fournisseurs agroalimentaires, à consulter les sources de chaque fiche et à préparer une liste de prospects à contacter.
 
-## Que faire à la première ouverture ?
+## Commencer par le corridor Maroc → France
+
+À l’ouverture, choisissez **Offre marocaine**, **Acheteurs en France**, **Opportunités** ou **Organismes et marché**. Filtrez les offres par produit et ville. Sur une fiche de fournisseur, ouvrez un acheteur proposé pour consulter ses preuves et décider d’une prochaine action. Les rapprochements sont fondés sur les gammes publiées. Confirmez toujours le besoin, l’origine et les spécifications avec l’acheteur.
+
+**Opportunités** interroge TED pour les demandes d’achat publiques françaises du corridor. La vue affiche l’avis officiel et une échéance lorsque celle-ci est exploitable. Les agréments, conditions d’accès au marché et données agrégées sont accessibles depuis **Organismes et marché**. Le bouton **Suivre le corridor** repère les nouveaux avis au moment où vous ouvrez cette vue dans le même navigateur.
+
+## Examiner et suivre les prospects
 
 1. Dans **Prospects**, consultez la sélection préparée. Elle contient deux entreprises françaises dans le secteur des conserves de poisson. Chaque fiche indique les sources utilisées pour documenter l’identité de l’entreprise et sa gamme.
 2. Utilisez les filtres de revue ou le champ de recherche pour retrouver une entreprise ou une source. Ouvrez une fiche et lisez les **Éléments de preuve** avant de décider.
@@ -18,7 +24,7 @@ Suivez le [guide d’installation Windows](INSTALLATION-WINDOWS.md). Il détaill
 
 ### Commandes d’installation et de démarrage
 
-La version candidate est `v1.0.0-rc.4`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
+La version candidate est `v1.0.0-rc.5`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
 
 ```powershell
 npm.cmd ci
@@ -47,7 +53,7 @@ export BRAVE_SEARCH_API_KEY
 npm start
 ```
 
-Dans **Prospects**, cliquez sur **Nouvelle recherche**, choisissez une mission ou personnalisez le produit, le marché et le type d’entreprise. L’application utilise Brave pour trouver des liens, lit les pages accessibles et présente les mentions de produits comme des pistes à examiner. Chaque session lance deux requêtes et traite jusqu’à dix pages. Les recherches peuvent être facturées selon votre offre Brave.
+Dans **Prospects**, cliquez sur **Nouvelle recherche**, choisissez une mission ou personnalisez le produit, le marché et le type d’entreprise. L’application utilise Brave pour trouver des liens, lit les pages accessibles et présente les mentions de produits comme des pistes à examiner. Chaque session lance deux requêtes et traite jusqu’à dix pages. Pour le marché français, un SIREN ou SIRET publié sur une page peut déclencher un contrôle auprès du registre public. Les recherches peuvent être facturées selon votre offre Brave.
 
 Dans **Activité de la session**, ouvrez **Requêtes et pages consultées** pour voir les sources et les éventuels échecs. Si la recherche est partielle, les résultats déjà trouvés restent disponibles. Utilisez **Relancer les étapes en échec** pour réessayer une fois. Vérifiez l’identité, la gamme et la pertinence avant d’approuver un candidat.
 
@@ -83,6 +89,7 @@ Les anciennes versions de développement stockaient la base dans `data/prospecti
 
 - [Déploiement Netlify et Supabase](DEPLOIEMENT-NETLIFY.md) pour ouvrir la sélection sans compte ou configurer un espace avec connexion.
 - [Déploiement Vercel et Supabase](DEPLOYMENT.md) pour l’administration de la version hébergée.
+- [Audit des agents](AUDIT-AGENTS.md) pour la couverture du brief et les prochaines étapes.
 - [Parcours de test](PILOT.md), [notes de version](CHANGELOG.md) et [exigences techniques](TRD.md).
 
 La sélection initiale est un relevé daté. Les identités ont été contrôlées via l’[API Recherche d’entreprises](https://recherche-entreprises.api.gouv.fr/docs/) et les gammes ont été documentées à partir des sites des entreprises. Pour préparer un nouveau relevé destiné à une future installation, vérifiez les pages de la sélection puis lancez `npm run catalogue:prepare -- AAAA-MM-JJ` avec la date de consultation. Chaque base locale importe la sélection une seule fois et conserve ses décisions.

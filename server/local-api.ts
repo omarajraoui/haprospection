@@ -6,10 +6,11 @@ import { resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { Plugin, PreviewServer, ViteDevServer } from 'vite'
 import { type Lead, type Evidence } from '../src/prospects.ts'
-import { decisions, type Session, type Review, type Source, type FollowUp } from '../src/research.ts'
+import { canApproveLead, decisions, type Session, type Review, type Source, type FollowUp } from '../src/research.ts'
 
 import { discoveryTasks, retryFailedTasks } from './discovery.ts'
 import { discoveryWorker } from './discovery-worker.ts'
+import { fetchTedOpportunities } from './opportunities.ts'
 import { shortlistWorkbook } from './workbook.ts'
 
 import { dateField, field, RequestError, sourceUrl } from './validation.ts'
@@ -104,7 +105,9 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
       (Review & { lead_id: string; evidence_revision: number })[]) {
       const invalidated = entry.decision === 'approved'
         && entry.evidence_revision !== (revisions.get(entry.lead_id) ?? 0)
-      reviews[entry.lead_id] = invalidated ? undefined : {
+      const lead = session.leads.find(item => item.id === entry.lead_id)
+      const blocked = entry.decision === 'approved' && lead && !canApproveLead(lead)
+      reviews[entry.lead_id] = invalidated || blocked ? undefined : {
         decision: entry.decision, reason: entry.reason, reviewedAt: entry.reviewedAt,
       }
     }
@@ -126,6 +129,9 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
     try {
       if (!/^(?:127\.0\.0\.1|localhost)(?::[0-9]+)?$/.test(request.headers.host ?? '')) {
         throw new RequestError(403, 'Accès réservé à cette machine.')
+      }
+      if (path === '/api/corridors/maroc-france-conserves/opportunities' && request.method === 'GET') {
+        return send(200, await fetchTedOpportunities())
       }
       if (path === '/api/auth/status' && request.method === 'GET') {
         return send(200, { hosted: false, authenticated: true })
@@ -195,10 +201,15 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
         const row = findSession.get(sessionId) as SessionRow | undefined
         if (!row) throw new RequestError(404, 'Session introuvable.')
         const session = serialize(row)
-        if (!session.leads.some(lead => lead.id === leadId)) throw new RequestError(404, 'Prospect introuvable.')
+        const lead = session.leads.find(item => item.id === leadId)
+        if (!lead) throw new RequestError(404, 'Prospect introuvable.')
+        if (session.tasks?.some(task => task.state === 'queued')) throw new RequestError(409, 'La recherche est encore en cours.')
 
         if (action === 'review') {
           const decision = body.decision
+          if (decision === 'approved' && !canApproveLead(lead)) {
+            throw new RequestError(409, 'L’unité légale est inactive au registre. La fiche doit être signalée ou écartée.')
+          }
           if (typeof decision !== 'string' || !Object.hasOwn(decisions, decision)) {
             throw new RequestError(400, 'Décision inconnue.')
           }

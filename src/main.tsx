@@ -2,10 +2,11 @@ import { StrictMode, useEffect, useState, type FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import { defaultSearch, type Lead, type Search } from './prospects'
 import { accessStatus, signIn, signOut, useBrowserWorkspace, type AccessStatus, attachEvidence, createSession, createSource, discoveryConfig, loadSessions, loadSources, retryDiscovery, saveFollowUp, saveReview } from './api'
-import { approvedLeads, decisions, type Decision, type EvidenceInput, type Review, type Session, type Source } from './research'
+import { approvedLeads, canApproveLead, decisions, type Decision, type EvidenceInput, type Review, type Session, type Source } from './research'
 import { EvidenceForm, FollowUpForm, Resources, inputClass } from './resources'
 import { matchesLead, searchable, type EvidenceFilter, type ReviewFilter } from './lead-filters'
 import { sourceKind, sourceKinds } from './source-quality'
+import { CorridorView } from './corridor-view'
 import { missions } from './missions'
 import './styles.css'
 
@@ -13,6 +14,7 @@ const statusLabels = {
   corroborated: { label: 'Sources concordantes', style: 'bg-emerald-100 text-emerald-900' },
   missing: { label: 'Contact manquant', style: 'bg-amber-100 text-amber-950' },
   documented: { label: 'Identité et gamme documentées', style: 'bg-emerald-100 text-emerald-900' },
+  'identity-verified': { label: 'Identité vérifiée au registre', style: 'bg-emerald-100 text-emerald-900' },
   unverified: { label: 'Candidat à vérifier', style: 'bg-amber-100 text-amber-950' },
   conflict: { label: 'Identité à vérifier', style: 'bg-rose-100 text-rose-950' },
 }
@@ -21,8 +23,9 @@ const dateTime = new Intl.DateTimeFormat('fr-FR', {
   day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
 })
 
-function ReviewForm({ review, onSave }: {
+function ReviewForm({ review, approvalAllowed, onSave }: {
   review: Review | undefined
+  approvalAllowed: boolean
   onSave: (decision: Decision, reason: string) => Promise<void>
 }) {
   const [decision, setDecision] = useState<Decision | ''>(review?.decision ?? '')
@@ -53,6 +56,7 @@ function ReviewForm({ review, onSave }: {
   return (
     <form id="lead-review" tabIndex={-1} onSubmit={submit} className="mt-6 scroll-mt-4 rounded-lg border border-stone-200 p-4">
       <h4 className="text-lg font-semibold">Décision de revue</h4>
+      {!approvalAllowed && <p className="mt-2 text-sm text-rose-800">Le registre indique une entreprise inactive. Signalez ou écartez la fiche.</p>}
       {review && (
         <p className="mt-1 break-words text-sm text-stone-700">
           {decisions[review.decision]} · {dateTime.format(new Date(review.reviewedAt))} · {review.reason}
@@ -65,7 +69,7 @@ function ReviewForm({ review, onSave }: {
             setSaved(false)
           }}>
             <option value="" disabled>Choisir une décision</option>
-            <option value="approved">Approuver</option>
+            <option value="approved" disabled={!approvalAllowed}>Approuver</option>
             <option value="flagged">Signaler</option>
             <option value="dismissed">Écarter</option>
           </select>
@@ -93,6 +97,13 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
   onResources: () => void
 }) {
   const status = statusLabels[lead.status]
+  const qualification = lead.qualification
+  const identityLabels = {
+    pending: 'Contrôle à terminer',
+    verified: 'Nom et SIREN concordants',
+    unverified: 'À confirmer',
+    conflict: 'Unité légale inactive',
+  }
 
   return (
     <article aria-labelledby="lead-name" className="surface min-w-0 p-5 sm:p-6">
@@ -105,6 +116,17 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
         </a>}
       </div>
       <p className="mt-2 text-stone-700">{lead.reason}</p>
+      {qualification && (
+        <dl aria-label="Contrôles de qualification" className="mt-4 grid gap-3 rounded-lg bg-paper p-4 text-sm sm:grid-cols-2">
+          <div><dt className="font-semibold">Identité légale</dt><dd>{identityLabels[qualification.identity]}</dd></div>
+          <div><dt className="font-semibold">Rôle recherché</dt><dd>{qualification.roleMention ? 'Mention repérée · à confirmer' : 'Sans mention exploitable'}</dd></div>
+          <div><dt className="font-semibold">Marché cible</dt><dd>{qualification.marketMention ? 'Mention repérée · à confirmer' : 'À confirmer'}</dd></div>
+          {qualification.origin && <div>
+            <dt className="font-semibold">Origine demandée · {qualification.origin.requested}</dt>
+            <dd>{qualification.origin.mentioned ? 'Pays mentionné · origine à confirmer' : 'À confirmer'}</dd>
+          </div>}
+        </dl>
+      )}
       <dl className="mt-4 rounded-lg bg-paper p-4">
         <dt className="text-sm font-semibold">Contact achats</dt>
         <dd className="mt-1 break-words">{lead.contact ?? 'Aucun contact achats documenté'}</dd>
@@ -113,7 +135,7 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
       <ul className="space-y-3">
         {lead.evidence.map((claim) => {
           const quality = sourceKinds[sourceKind(claim.url, claim.sourceType)]
-          return <li key={claim.id ?? claim.field} className="rounded-lg border border-stone-200 p-4">
+          return <li key={claim.id ?? `${claim.url}/${claim.field}`} className="rounded-lg border border-stone-200 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h5 className="font-semibold">{claim.field}</h5>
               <span className="rounded-md bg-paper px-2 py-1 text-xs font-medium text-forest">{quality.label}</span>
@@ -132,7 +154,7 @@ function LeadDetail({ lead, review, sources, onSave, onAttach, onResources }: {
         })}
       </ul>
       {onAttach && <EvidenceForm sources={sources} onAttach={onAttach} onResources={onResources} />}
-      {onSave && <ReviewForm key={lead.evidence.length} review={review} onSave={onSave} />}
+      {onSave && <ReviewForm key={lead.evidence.length} review={review} approvalAllowed={canApproveLead(lead)} onSave={onSave} />}
     </article>
   )
 }
@@ -142,6 +164,7 @@ const reviewFilters = [
 ] as const
 
 const sections = {
+  corridor: 'Corridor commercial',
   research: 'Prospects',
   shortlist: 'Liste prioritaire',
   resources: 'Ressources',
@@ -170,7 +193,7 @@ function Guide({ onSearch }: { onSearch: () => void }) {
 }
 
 function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPreview: boolean; onLogout: () => void }) {
-  const [section, setSection] = useState<Section>('research')
+  const [section, setSection] = useState<Section>('corridor')
   const [showMissions, setShowMissions] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [query, setQuery] = useState('')
@@ -356,6 +379,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
           <div>
             <h1>{section === 'research' ? 'Prospects' : sections[section]}</h1>
             <p>{{
+              corridor: 'Offre, acheteurs, sources officielles et demandes d’achat.',
               research: 'Examinez les prospects déjà documentés ou lancez une recherche pour élargir la sélection.',
               shortlist: 'Retrouvez les prospects approuvés et planifiez les relances.',
               resources: 'Consultez les sources et ajoutez vos propres références.',
@@ -383,6 +407,16 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
           </p>
         )}
 
+        {section === 'corridor' && !loading && (
+          <CorridorView buyers={catalogue?.leads ?? []} onBuyer={id => {
+            if (!catalogue) return
+            openSession(catalogue, id)
+            navigate('research')
+            focusLead()
+          }} />
+        )}
+        {section === 'corridor' && loading && <p role="status">Ouverture du corridor…</p>}
+        {section === 'corridor' && error && <p role="alert" className="mt-4 text-rose-800">{error}</p>}
         {section === 'research' && <>
         {showMissions && (
           <section id="web-search-options" aria-labelledby="missions-heading" className="surface p-5 sm:p-6">
@@ -491,16 +525,16 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
                 <p className="mt-1 text-sm text-slate-600">{leads.length} candidat(s) avec un extrait pertinent</p>
               </li>
               <li className="rounded-lg bg-paper px-4 py-3">
-                <p className="font-semibold">Votre revue</p>
-                <p className="mt-1 text-sm text-slate-600">Confirmer l’entreprise et son activité</p>
+                <p className="font-semibold">Identités contrôlées</p>
+                <p className="mt-1 text-sm text-slate-600">{leads.filter(lead => lead.qualification?.identity === 'verified').length} nom(s) et SIREN concordants</p>
               </li>
             </ol>
             <details className="mt-4">
               <summary className="cursor-pointer font-medium">Requêtes et pages consultées</summary>
               <ul className="mt-2 divide-y divide-stone-200">
                 {run.tasks?.map(task => (
-                  <li key={`${task.kind}/${task.input}`} className="break-all py-2 text-sm">
-                    <p>{task.input}</p>
+                  <li key={`${task.kind}/${task.input}/${task.leadId ?? ''}`} className="break-all py-2 text-sm">
+                    <p>{task.kind === 'registry' ? `Registre français · SIREN ${task.input}` : task.input}</p>
                     <p className={task.state === 'failed' ? 'text-rose-800' : 'text-stone-700'}>
                       {task.state === 'queued' ? 'En attente ou en cours' : task.detail}
                       {task.attempts ? ` · ${task.attempts} tentative(s)` : ''}

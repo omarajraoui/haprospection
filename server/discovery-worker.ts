@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import type { DatabaseSync } from 'node:sqlite'
-import { discoveryProviders, processDiscoveryTask, type DiscoveryPayload } from './discovery-task.ts'
+import { discoveryProviders, processDiscoveryTask, type DiscoveryPayload, type DiscoveryProviders } from './discovery-task.ts'
 
-export function discoveryWorker(database: DatabaseSync, key: string, providers = discoveryProviders) {
+export function discoveryWorker(database: DatabaseSync, key: string, providers: DiscoveryProviders = discoveryProviders) {
   const queue = database.prepare(`
     SELECT id, payload FROM sessions
     WHERE json_extract(payload, '$.mode') = 'live'

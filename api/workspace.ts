@@ -4,6 +4,7 @@ import {
   addSource, changeLead, listSources, retrySearch, sessions, startSearch,
 } from '../server/cloud/workspace.ts'
 import { RequestError } from '../server/validation.ts'
+import { fetchTedOpportunities } from '../server/opportunities.ts'
 import { shortlistWorkbook } from '../server/workbook.ts'
 
 function json(body: unknown, status = 200, headers?: Record<string, string>) {
@@ -47,6 +48,9 @@ export async function handleWorkspace(
     ? url.searchParams.get('route') ?? ''
     : url.pathname.replace(/^\/api\//, '')
   try {
+    if (path === 'corridors/maroc-france-conserves/opportunities' && method === 'GET') {
+      return json(await fetchTedOpportunities(), 200, { 'Cache-Control': 'public, max-age=60, s-maxage=300' })
+    }
     if (method === 'POST' || method === 'PUT') verifyOrigin(request, url)
     if (path === 'auth/login' && method === 'POST') {
       const cookie = await login(await readBody(request))

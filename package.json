@@ -1,6 +1,6 @@
 {
   "name": "ha-prospection",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -8,7 +8,8 @@
     "start": "node scripts/start.mjs",
     "backup": "node scripts/data.mjs backup",
     "restore": "node scripts/data.mjs restore",
-    "catalogue:prepare": "node scripts/prepare-catalogue.mjs"
+    "catalogue:prepare": "node scripts/prepare-catalogue.mjs",
+    "test": "node --experimental-strip-types --test"
   },
   "type": "module",
   "private": true,

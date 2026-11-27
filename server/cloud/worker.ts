@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto'
-import { discoveryProviders, processDiscoveryTask, type DiscoveryPayload } from '../discovery-task.ts'
+import { discoveryProviders, processDiscoveryTask, type DiscoveryPayload, type DiscoveryProviders } from '../discovery-task.ts'
 import { database, transaction } from './database.ts'
 import type { StoredSession } from './workspace.ts'
 
 type Job = { owner: string; id: string; state: StoredSession & DiscoveryPayload }
 
-export async function processQueuedTask(key: string, providers = discoveryProviders) {
+export async function processQueuedTask(key: string, providers: DiscoveryProviders = discoveryProviders) {
   const job = await transaction(async client => {
     const result = await client.query<Job>(`
       SELECT owner, id, state FROM ha_prospection.sessions
@@ -26,6 +26,11 @@ export async function processQueuedTask(key: string, providers = discoveryProvid
   if (!job) return false
 
   await processDiscoveryTask(job.state, job.task, key, providers)
+  for (const lead of job.state.leads) {
+    if (lead.qualification?.identity === 'conflict' && job.state.reviews[lead.id]?.decision === 'approved') {
+      delete job.state.reviews[lead.id]
+    }
+  }
   delete job.state.lease
   await database().query(`
     UPDATE ha_prospection.sessions SET state = $3

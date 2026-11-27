@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { PoolClient } from 'pg'
 import preparedCatalogue from '../prepared-catalogue.json' with { type: 'json' }
-import { decisions, type Decision, type Review, type Session, type Source } from '../../src/research.ts'
+import { canApproveLead, decisions, type Decision, type Review, type Session, type Source } from '../../src/research.ts'
 import { dateField, field, RequestError, sourceUrl } from '../validation.ts'
 import { discoveryTasks, retryFailedTasks } from '../discovery.ts'
 import { database, transaction } from './database.ts'
@@ -107,6 +107,9 @@ export function changeLead(owner: string, id: string, leadId: string, action: st
 
     if (action === 'review') {
       const decision = body.decision
+      if (decision === 'approved' && !canApproveLead(lead)) {
+        throw new RequestError(409, 'L’unité légale est inactive au registre. La fiche doit être signalée ou écartée.')
+      }
       if (typeof decision !== 'string' || !Object.hasOwn(decisions, decision)) {
         throw new RequestError(400, 'Décision inconnue.')
       }

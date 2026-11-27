@@ -1,5 +1,13 @@
 # Release notes
 
+## v1.0.0-rc.5
+
+- Le site s’ouvre sur le corridor Maroc → France pour les conserves de poisson. La sélection relie des fournisseurs marocains documentés aux acheteurs français par produit, avec les preuves et les vérifications à faire.
+- Le répertoire du corridor relie les organismes marocains et français aux démarches et aux données de marché correspondantes.
+- La vue Opportunités interroge TED et écarte les avis dont l’échéance est expirée ou ambiguë. Le suivi du corridor est enregistré dans le navigateur.
+- La qualification web distingue le produit, le rôle, le marché et l’origine. Pour la France, un identifiant légal publié déclenche un contrôle au registre. Une unité inactive est exclue de l’approbation et de l’export.
+- La version Netlify reste accessible sans compte avec la sélection préparée. Les recherches web personnalisées demandent une configuration du moteur de recherche et de l’espace hébergé.
+
 ## v1.0.0-rc.4
 
 Adds the hosted Vercel deployment configuration and a private browser sign-in. The hosted backend uses Supabase PostgreSQL and imports the prepared catalogue on first access. Local use remains available. Optional live searches run through a protected scheduled worker.

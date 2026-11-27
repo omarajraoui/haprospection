@@ -1,6 +1,6 @@
 import preparedCatalogue from '../server/prepared-catalogue.json'
 import { dateField, field, sourceUrl } from '../server/validation'
-import { decisions, type Decision, type Session, type Source } from './research'
+import { canApproveLead, decisions, type Decision, type Session, type Source } from './research'
 
 const storageKey = 'ha-prospection-browser-workspace-v1'
 const catalogueId = '803dfe4c-e447-4894-a16a-8accc64af456'
@@ -46,6 +46,7 @@ export function browserRequest(path: string, method: string, input: object | und
     const lead = sessionId === session.id && session.leads.find(item => item.id === leadId)
     if (!lead) throw new Error('Prospect introuvable.')
     if (action === 'review') {
+      if (body.decision === 'approved' && !canApproveLead(lead)) throw new Error('L’unité légale est inactive au registre.')
       if (typeof body.decision !== 'string' || !Object.hasOwn(decisions, body.decision)) throw new Error('Décision inconnue.')
       session.reviews[leadId] = {
         decision: body.decision as Decision, reason: field(body.reason, 500), reviewedAt: new Date().toISOString(),

@@ -9,6 +9,7 @@
   },
   "rewrites": [
     { "source": "/api/auth/:action", "destination": "/api/workspace?route=auth/:action" },
+    { "source": "/api/corridors/:path*", "destination": "/api/workspace?route=corridors/:path*" },
     { "source": "/api/discovery", "destination": "/api/workspace?route=discovery" },
     { "source": "/api/sessions", "destination": "/api/workspace?route=sessions" },
     { "source": "/api/sessions/:path*", "destination": "/api/workspace?route=sessions/:path*" },
