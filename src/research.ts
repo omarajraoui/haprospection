@@ -39,6 +39,12 @@ export type Session = {
   followUps: Record<string, FollowUp | undefined>
 }
 
+export function appendPreparedLeads(current: Lead[], prepared: Lead[]) {
+  const ids = new Set(current.map(lead => lead.id))
+  const additions = prepared.filter(lead => !ids.has(lead.id))
+  return additions.length ? [...current, ...additions] : current
+}
+
 export type Source = {
   id: string
   name: string

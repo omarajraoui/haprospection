@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.0-rc.7
+
+Le corridor affiche le nombre d’entreprises par produit, des exemples de recettes et de formats sourcés, et une recherche par nom facultative. La sélection inclut le thon, le grossiste Yuly Food et la conserverie Conserval. Les espaces existants reçoivent le nouveau prospect avec leurs décisions et preuves déjà enregistrées.
+
 ## v1.0.0-rc.6
 
 L’accueil explique le résultat attendu et propose un accès direct à une première fiche acheteur. Le parcours accompagne ensuite la vérification, la décision et la relance. La vue Suivi des prospects permet de retrouver les entreprises retenues et d’exporter la liste.

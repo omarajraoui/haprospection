@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { PoolClient } from 'pg'
 import preparedCatalogue from '../prepared-catalogue.json' with { type: 'json' }
-import { canApproveLead, decisions, type Decision, type Review, type Session, type Source } from '../../src/research.ts'
+import { appendPreparedLeads, canApproveLead, decisions, type Decision, type Review, type Session, type Source } from '../../src/research.ts'
 import { dateField, field, RequestError, sourceUrl } from '../validation.ts'
 import { discoveryTasks, retryFailedTasks } from '../discovery.ts'
 import { database, transaction } from './database.ts'
@@ -34,7 +34,15 @@ export async function sessions(owner: string): Promise<Session[]> {
   const result = await database().query<{ state: StoredSession }>(
     'SELECT state FROM ha_prospection.sessions WHERE owner = $1 ORDER BY created_at DESC, id', [owner],
   )
-  return result.rows.map(({ state }) => publicSession(state))
+  const prepared = preparedCatalogue.leads as Session['leads']
+  return Promise.all(result.rows.map(({ state }) => {
+    if (state.id === catalogueId && appendPreparedLeads(state.leads, prepared) !== state.leads) {
+      return updateSession(owner, catalogueId, current => {
+        current.leads = appendPreparedLeads(current.leads, prepared)
+      })
+    }
+    return publicSession(state)
+  }))
 }
 
 export async function startSearch(owner: string, body: Record<string, unknown>) {

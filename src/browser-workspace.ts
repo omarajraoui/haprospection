@@ -1,6 +1,6 @@
 import preparedCatalogue from '../server/prepared-catalogue.json'
 import { dateField, field, sourceUrl } from '../server/validation'
-import { canApproveLead, decisions, type Decision, type Session, type Source } from './research'
+import { appendPreparedLeads, canApproveLead, decisions, type Decision, type Session, type Source } from './research'
 
 const storageKey = 'ha-prospection-browser-workspace-v1'
 const catalogueId = '803dfe4c-e447-4894-a16a-8accc64af456'
@@ -9,7 +9,11 @@ type Workspace = { session: Session; sources: Source[] }
 
 function readWorkspace(): Workspace {
   const saved = localStorage.getItem(storageKey)
-  if (saved) return JSON.parse(saved) as Workspace
+  if (saved) {
+    const workspace = JSON.parse(saved) as Workspace
+    workspace.session.leads = appendPreparedLeads(workspace.session.leads, preparedCatalogue.leads as Session['leads'])
+    return workspace
+  }
   return {
     session: {
       ...(structuredClone(preparedCatalogue) as Omit<Session, 'id' | 'reviews' | 'followUps'>),

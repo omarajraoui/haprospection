@@ -6,7 +6,7 @@ import { resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { Plugin, PreviewServer, ViteDevServer } from 'vite'
 import { type Lead, type Evidence } from '../src/prospects.ts'
-import { canApproveLead, decisions, type Session, type Review, type Source, type FollowUp } from '../src/research.ts'
+import { appendPreparedLeads, canApproveLead, decisions, type Session, type Review, type Source, type FollowUp } from '../src/research.ts'
 
 import { discoveryTasks, retryFailedTasks } from './discovery.ts'
 import { discoveryWorker } from './discovery-worker.ts'
@@ -302,6 +302,13 @@ export function localApi(version: string): Plugin {
     const catalogueId = '803dfe4c-e447-4894-a16a-8accc64af456'
     database.prepare('INSERT INTO sessions (id, payload) VALUES (?, ?) ON CONFLICT (id) DO NOTHING')
       .run(catalogueId, JSON.stringify(preparedCatalogue))
+    const stored = database.prepare('SELECT payload FROM sessions WHERE id = ?').get(catalogueId) as { payload: string }
+    const snapshot = JSON.parse(stored.payload) as Pick<Session, 'leads'>
+    const leads = appendPreparedLeads(snapshot.leads, preparedCatalogue.leads as Lead[])
+    if (leads !== snapshot.leads) {
+      database.prepare('UPDATE sessions SET payload = ? WHERE id = ? AND payload = ?')
+        .run(JSON.stringify({ ...snapshot, leads }), catalogueId, stored.payload)
+    }
     const key = process.env.BRAVE_SEARCH_API_KEY?.trim() ?? ''
     const stop = key ? discoveryWorker(database, key) : undefined
     server.middlewares.use(createHandler(database, key, version))

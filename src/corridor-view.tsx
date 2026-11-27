@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { buyerProducts, corridor, corridorResources, sharedProducts, suppliers, type OpportunityFeed, type Product } from './corridor-data'
+import { corridor, corridorResources, referencesFor, sharedProducts, suppliers, type OpportunityFeed, type Product, type ProductReference } from './corridor-data'
 import { searchable } from './lead-filters'
 import type { Lead } from './prospects'
 import { inputClass } from './resources'
@@ -85,6 +85,21 @@ function OpportunityView({ followed }: { followed: boolean }) {
   )
 }
 
+function PublishedReferences({ references }: { references: ProductReference[] }) {
+  return (
+    <ul className="mt-3 divide-y divide-stone-200 rounded-lg border border-stone-200 px-3">
+      {references.map(reference => (
+        <li key={reference.product} className="py-3">
+          <p className="font-semibold">{reference.product}</p>
+          <p className="mt-1 text-sm text-slate-700">{reference.description}</p>
+          <a className="mt-1 inline-block text-sm font-semibold text-forest underline"
+            href={reference.url} target="_blank" rel="noreferrer">Voir la source</a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id: string) => void }) {
   const [view, setView] = useState<View>(views[0])
   const [product, setProduct] = useState<Product | ''>('')
@@ -93,10 +108,10 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
   const [supplierId, setSupplierId] = useState('lgmc')
   const [followed, setFollowed] = useState(() => readLocal(storageKey) === 'true')
   const cities = [...new Set(suppliers.flatMap(supplier => supplier.sites.map(site => site.city)))]
-  const visibleSuppliers = suppliers.filter(supplier => (!product || supplier.products.includes(product))
+  const visibleSuppliers = suppliers.filter(supplier => (!product || supplier.references.some(reference => reference.product === product))
     && (!city || supplier.sites.some(site => site.city === city)))
   const selected = visibleSuppliers.find(supplier => supplier.id === supplierId) ?? visibleSuppliers[0]
-  const visibleBuyers = buyers.filter(buyer => (!product || buyerProducts[buyer.id]?.includes(product))
+  const visibleBuyers = buyers.filter(buyer => referencesFor(buyer.id, product).length > 0
     && searchable(buyer.name).includes(searchable(buyerQuery)))
   const matches = selected ? buyers.flatMap(buyer => {
     const common = sharedProducts(selected, buyer.id, product)
@@ -126,22 +141,41 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
       </nav>
 
       {(view === 'Offre marocaine' || view === 'Acheteurs en France') && (
-        <div className="surface grid gap-3 p-4 sm:grid-cols-2">
-          <label className="text-sm font-semibold">Produit
-            <select className={inputClass} value={product} onChange={event => setProduct(event.target.value as Product | '')}>
-              <option value="">Tous les produits</option>
-              {corridor.products.map(item => <option key={item}>{item}</option>)}
-            </select>
-          </label>
-          {view === 'Offre marocaine' ? <label className="text-sm font-semibold">Ville de production documentée
+        <section className="surface p-4 sm:p-5" aria-labelledby="product-filter-heading">
+          <h2 id="product-filter-heading" className="font-semibold">Quel produit voulez-vous proposer ?</h2>
+          <p className="mt-1 text-sm text-slate-700">{view === 'Acheteurs en France'
+            ? 'Choisissez par exemple Maquereaux pour afficher les entreprises qui en proposent dans leur catalogue.'
+            : 'Choisissez un produit pour afficher les fabricants et les recettes qu’ils publient.'}</p>
+          <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrer par produit">
+            {(['', ...corridor.products] as const).map(item => {
+              const count = view === 'Acheteurs en France'
+                ? buyers.filter(buyer => referencesFor(buyer.id, item).length > 0).length
+                : suppliers.filter(supplier => !item || supplier.references.some(reference => reference.product === item)).length
+              return <button key={item} type="button" className="filter-pill" aria-pressed={product === item}
+                onClick={() => setProduct(item)}>{item || 'Tous les produits'} <span>{count}</span></button>
+            })}
+          </div>
+          {view === 'Offre marocaine' ? <label className="mt-4 block max-w-sm text-sm font-semibold">Ville de production · facultatif
             <select className={inputClass} value={city} onChange={event => setCity(event.target.value)}>
               <option value="">Toutes les villes</option>
               {cities.map(item => <option key={item}>{item}</option>)}
             </select>
-          </label> : <label className="text-sm font-semibold">Nom de l’entreprise
-            <input className={inputClass} type="search" value={buyerQuery} onChange={event => setBuyerQuery(event.target.value)} />
-          </label>}
-        </div>
+          </label> : (
+            <details className="mt-4 max-w-sm" open={buyerQuery ? true : undefined}>
+              <summary className="cursor-pointer text-sm font-semibold text-forest">Vous connaissez déjà une entreprise ?</summary>
+              <label className="mt-2 block text-sm font-semibold">Filtrer par nom · facultatif
+                <input className={inputClass} type="search" value={buyerQuery} placeholder="Par exemple Moulin Ville"
+                  onChange={event => setBuyerQuery(event.target.value)} />
+              </label>
+            </details>
+          )}
+          <p role="status" className="mt-4 text-sm text-slate-600">
+            {view === 'Acheteurs en France'
+              ? `${visibleBuyers.length} entreprise(s) dans la sélection`
+              : `${visibleSuppliers.length} fournisseur(s) dans la sélection`}
+            {product && ` · ${product}`}
+          </p>
+        </section>
       )}
 
       {view === 'Offre marocaine' && (!selected ? (
@@ -154,7 +188,7 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
                 onClick={() => setSupplierId(supplier.id)}>
                 <span className="block font-semibold">{supplier.name}</span>
                 <span className="mt-1 block text-sm text-slate-700">{supplier.role}</span>
-                <span className="mt-1 block text-sm text-slate-600">{supplier.products.join(' · ')}</span>
+                <span className="mt-1 block text-sm text-slate-600">{supplier.references.map(reference => reference.product).join(' · ')}</span>
               </button>
             </li>)}
           </ul>
@@ -162,8 +196,13 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
             <div>
               <p className="text-sm font-medium text-forest">{selected.role}</p>
               <h2 id="supplier-heading" className="mt-1 text-2xl font-semibold">{selected.name}</h2>
-              <p className="mt-2 text-slate-700">{selected.products.join(' · ')}</p>
+
             </div>
+            <section>
+              <h3 className="font-semibold">Préparations publiées par le fabricant</h3>
+              <PublishedReferences references={selected.references.filter(reference => !product || reference.product === product)} />
+              <p className="mt-2 text-sm text-slate-600">Avant de chiffrer, demandez la fiche technique, le conditionnement exact, la quantité minimale et les certificats de l’unité pour le produit proposé.</p>
+            </section>
             <section>
               <h3 className="font-semibold">Acheteurs à approcher</h3>
               <p className="mt-1 text-sm text-slate-600">Rapprochements fondés sur les gammes publiées. La relation commerciale et le besoin d’achat restent à confirmer.</p>
@@ -203,11 +242,17 @@ export function CorridorView({ buyers, onBuyer }: { buyers: Lead[]; onBuyer: (id
         visibleBuyers.length ? <ul className="grid gap-4 md:grid-cols-2">
           {visibleBuyers.map(buyer => <li className="surface p-5" key={buyer.id}>
             <h2 className="text-lg font-semibold">{buyer.name}</h2>
-            <p className="mt-1 text-sm text-slate-600">{(buyerProducts[buyer.id] ?? []).join(' · ')}</p>
-            <p className="mt-3 text-sm text-slate-700">{buyer.reason}</p>
+            <p className="mt-1 text-sm text-slate-700">Produits repérés dans son catalogue</p>
+            <PublishedReferences references={referencesFor(buyer.id, product)} />
+            <p className="mt-3 text-sm text-slate-600">À demander à l’acheteur&nbsp;: origine acceptée, recette, format, volume et certifications exigées.</p>
             <button type="button" className="secondary-button mt-4" onClick={() => onBuyer(buyer.id)}>Examiner la fiche</button>
           </li>)}
-        </ul> : <p className="surface p-5">Aucun acheteur à afficher pour ces critères.</p>
+        </ul> : <div className="surface p-5">
+          <p>Aucune entreprise de la sélection ne correspond aux filtres.</p>
+          <button type="button" className="secondary-button mt-3" onClick={() => { setProduct(''); setBuyerQuery('') }}>
+            Voir toutes les entreprises
+          </button>
+        </div>
       )}
       {view === 'Opportunités' && <OpportunityView followed={followed} />}
       {view === 'Organismes et marché' && (

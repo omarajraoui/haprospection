@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { activeTedNotices } from '../server/opportunities.ts'
-import { sharedProducts, suppliers } from '../src/corridor-data.ts'
+import { referencesFor, sharedProducts, suppliers } from '../src/corridor-data.ts'
+import preparedCatalogue from '../server/prepared-catalogue.json' with { type: 'json' }
+import { appendPreparedLeads } from '../src/research.ts'
 
 const today = '2026-11-27'
 const notice = {
@@ -43,4 +45,21 @@ test('excludes awards, stale or ambiguous deadlines, and unrelated markets or co
     { 'organisation-country-buyer': ['ESP'] },
     { 'classification-cpv': ['15800000'] },
   ]) assert.deepEqual(activeTedNotices([{ ...notice, ...override }], today), [])
+})
+
+test('lists both documented mackerel buyers with distinct formats', () => {
+  const buyers = preparedCatalogue.leads.flatMap(lead => referencesFor(lead.id, 'Maquereaux'))
+  assert.equal(buyers.length, 2)
+  assert.match(buyers[0].description, /190 g/)
+  assert.match(buyers[1].description, /125 g/)
+})
+
+test('adds prepared prospects without replacing evidence saved by an existing user', () => {
+  const existing = structuredClone(preparedCatalogue.leads.slice(0, 2))
+  existing[0].evidence.push({ excerpt: 'Source ajoutée par le client' })
+  const merged = appendPreparedLeads(existing, preparedCatalogue.leads)
+  assert.equal(merged.length, 3)
+  assert.equal(merged[0], existing[0])
+  assert.equal(merged[2].name, 'YULY FOOD')
+  assert.equal(appendPreparedLeads(merged, preparedCatalogue.leads), merged)
 })

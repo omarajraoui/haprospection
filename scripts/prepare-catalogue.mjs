@@ -13,6 +13,12 @@ const companies = [
     url: 'https://vital.fr/',
     description: 'Le site présente VITAL comme grossiste importateur de conserves alimentaires en France et cite le thon et les sardines dans sa gamme.',
   },
+  {
+    siren: '978450146',
+    legalName: 'YULY FOOD',
+    url: 'https://epicerie.yulyfood.com/collections/sardines-et-divers-mer',
+    description: 'Le grossiste présente aux professionnels des conserves de la mer, dont des sardines et des filets de maquereaux en boîte de 125 g.',
+  },
 ]
 
 const observedAt = process.argv[2]

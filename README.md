@@ -4,13 +4,13 @@ HA Prospection vous aide à repérer des acheteurs et fournisseurs agroalimentai
 
 ## Démarrer dans l’application
 
-Sur **Accueil**, cliquez sur **Examiner un premier acheteur** pour essayer le parcours, ou ouvrez **Comparer les produits et les acheteurs** pour explorer le corridor Maroc → France. Dans le corridor, choisissez **Offre marocaine**, **Acheteurs en France**, **Opportunités** ou **Organismes et marché**. Filtrez les offres par produit et ville. Sur une fiche de fournisseur, ouvrez un acheteur proposé pour consulter ses preuves et décider d’une prochaine action. Les rapprochements sont fondés sur les gammes publiées. Confirmez toujours le besoin, l’origine et les spécifications avec l’acheteur.
+Sur **Accueil**, cliquez sur **Examiner un premier acheteur** pour essayer le parcours, ou ouvrez **Comparer les produits et les acheteurs** pour explorer le corridor Maroc → France. Dans le corridor, choisissez **Offre marocaine**, **Acheteurs en France**, **Opportunités** ou **Organismes et marché**. Dans **Acheteurs en France**, choisissez **Maquereaux** pour afficher les prospects ayant du maquereau au catalogue, avec exemples de formats et liens vers les sources. La recherche par nom est facultative. Dans **Offre marocaine**, filtrez par produit et par ville. Sur une fiche de fournisseur, ouvrez un acheteur proposé pour consulter ses preuves et décider d’une prochaine action. Les rapprochements sont fondés sur les gammes publiées. Confirmez toujours le besoin, l’origine et les spécifications avec l’acheteur.
 
 **Opportunités** interroge TED pour les demandes d’achat publiques françaises du corridor. La vue affiche l’avis officiel et une échéance lorsque celle-ci est exploitable. Les agréments, conditions d’accès au marché et données agrégées sont accessibles depuis **Organismes et marché**. Le bouton **Suivre le corridor** repère les nouveaux avis au moment où vous ouvrez cette vue dans le même navigateur.
 
 ## Examiner et suivre les prospects
 
-1. Dans **Prospects**, consultez la sélection préparée. Elle contient deux entreprises françaises dans le secteur des conserves de poisson. Chaque fiche indique les sources utilisées pour documenter l’identité de l’entreprise et sa gamme.
+1. Dans **Prospects**, consultez la sélection préparée. Elle contient trois entreprises françaises dans le secteur des conserves de poisson. Chaque fiche indique les sources utilisées pour documenter l’identité de l’entreprise et sa gamme.
 2. Utilisez les filtres de revue ou le champ de recherche pour retrouver une entreprise ou une source. Ouvrez une fiche et lisez les **Éléments de preuve** avant de décider.
 3. Dans **Décision de revue**, choisissez **Retenir pour le suivi**, **Signaler** ou **Écarter**, saisissez un motif et enregistrez la décision. Une approbation ajoute l’entreprise à la **Suivi des prospects**.
 4. Dans **Suivi des prospects**, renseignez si besoin le responsable et la date de relance. Cliquez sur **Exporter Excel** pour télécharger la liste complète des prospects approuvés. Les onglets **Leads** et **Evidence** utilisent le même identifiant pour relier chaque entreprise à ses sources.
@@ -24,7 +24,7 @@ Suivez le [guide d’installation Windows](INSTALLATION-WINDOWS.md). Il détaill
 
 ### Commandes d’installation et de démarrage
 
-La version candidate est `v1.0.0-rc.6`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
+La version candidate est `v1.0.0-rc.7`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
 
 ```powershell
 npm.cmd ci
