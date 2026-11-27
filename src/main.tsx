@@ -207,6 +207,8 @@ function Guide({ onSearch }: { onSearch: () => void }) {
 
 function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPreview: boolean; onLogout: () => void }) {
   const [section, setSection] = useState<Section>('home')
+  const [searchRevision, setSearchRevision] = useState(0)
+  const [searchSeed, setSearchSeed] = useState<{ product: string; market: string }>()
   const [showMissions, setShowMissions] = useState(false)
   const [query, setQuery] = useState('')
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('all')
@@ -301,7 +303,9 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
     }
   }
 
-  function openSearch() {
+  function openSearch(product = '', market = '') {
+    setSearchSeed({ product, market })
+    if (showMissions) setSearchRevision(current => current + 1)
     navigate('research')
     setShowMissions(true)
     requestAnimationFrame(() => document.getElementById('search-heading')?.focus())
@@ -417,7 +421,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
                 </button>
               )}
               <button type="button" className="primary-button" aria-expanded={showMissions} aria-controls="web-search-options"
-                onClick={() => setShowMissions(!showMissions)}>
+                onClick={() => showMissions ? setShowMissions(false) : openSearch()}>
                 {showMissions ? 'Masquer les options de recherche' : 'Nouvelle recherche'}
               </button>
             </div>
@@ -443,7 +447,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
         {section === 'corridor' && loading && <p role="status">Ouverture du corridor…</p>}
         {section === 'corridor' && error && <p role="alert" className="mt-4 text-rose-800">{error}</p>}
         {section === 'research' && <>
-        {showMissions && <SearchPanel live={liveEnabled} loading={loading} busy={starting || (liveEnabled && hasQueued)} onLaunch={launch} />}
+        {showMissions && <SearchPanel key={searchRevision} seed={searchSeed} live={liveEnabled} loading={loading} busy={starting || (liveEnabled && hasQueued)} onLaunch={launch} />}
 
         {error && <p role="alert" className="mt-4 rounded-lg bg-rose-50 p-3 text-rose-900">{error}</p>}
 

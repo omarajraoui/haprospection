@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.0-rc.9
+
+L’accueil présente une sélection internationale de fournisseurs et d’importateurs documentés, avec filtres par catégorie et pays, reprise des critères dans la recherche et accès au portail UNGM.
+
 ## v1.0.0-rc.8
 
 La recherche est accessible depuis l’accueil. Ses critères distinguent le produit, son origine et le pays des entreprises ciblées. Le mode public prépare des requêtes guidées pour tout produit. Les espaces avec le service connecté utilisent les mêmes critères pour la recherche automatique.

@@ -3,13 +3,14 @@ import { missions, searchQueries } from './missions'
 import type { Search } from './prospects'
 import { inputClass } from './resources'
 
-export function SearchPanel({ live, loading, busy, onLaunch }: {
+export function SearchPanel({ seed, live, loading, busy, onLaunch }: {
+  seed?: { product: string; market: string }
   live: boolean
   loading: boolean
   busy: boolean
   onLaunch: (search: Search) => Promise<void>
 }) {
-  const [draft, setDraft] = useState<Search>({ product: '', origin: '', market: 'France', role: 'Importateurs et distributeurs' })
+  const [draft, setDraft] = useState<Search>({ product: seed?.product ?? '', origin: '', market: seed?.market ?? '', role: 'Importateurs et distributeurs' })
   const [guide, setGuide] = useState<Search>()
   const [chosen, setChosen] = useState('')
   const criteria = { ...draft, product: draft.product.trim(), market: draft.market.trim(), origin: draft.origin?.trim() }
