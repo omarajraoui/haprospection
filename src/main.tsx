@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useState, type FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import { defaultSearch, type Lead, type Search } from './prospects'
-import { accessStatus, signIn, signOut, type AccessStatus, attachEvidence, createSession, createSource, discoveryConfig, loadSessions, loadSources, retryDiscovery, saveFollowUp, saveReview } from './api'
+import { accessStatus, signIn, signOut, useBrowserWorkspace, type AccessStatus, attachEvidence, createSession, createSource, discoveryConfig, loadSessions, loadSources, retryDiscovery, saveFollowUp, saveReview } from './api'
 import { approvedLeads, decisions, type Decision, type EvidenceInput, type Review, type Session, type Source } from './research'
 import { EvidenceForm, FollowUpForm, Resources, inputClass } from './resources'
 import { matchesLead, searchable, type EvidenceFilter, type ReviewFilter } from './lead-filters'
@@ -169,7 +169,7 @@ function Guide({ onSearch }: { onSearch: () => void }) {
   )
 }
 
-function App({ hosted, onLogout }: { hosted: boolean; onLogout: () => void }) {
+function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPreview: boolean; onLogout: () => void }) {
   const [section, setSection] = useState<Section>('research')
   const [showMissions, setShowMissions] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -178,6 +178,8 @@ function App({ hosted, onLogout }: { hosted: boolean; onLogout: () => void }) {
   const [evidenceFilter, setEvidenceFilter] = useState<EvidenceFilter>('all')
   const [shortlistQuery, setShortlistQuery] = useState('')
   const [search, setSearch] = useState(defaultSearch)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState('')
   const [configuration, setConfiguration] = useState({ enabled: false, version: '', logPath: '' })
   const liveEnabled = configuration.enabled
   const [sessions, setSessions] = useState<Session[]>([])
@@ -250,6 +252,19 @@ function App({ hosted, onLogout }: { hosted: boolean; onLogout: () => void }) {
       setError(error instanceof Error ? error.message : 'Impossible de créer la session.')
     } finally {
       setStarting(false)
+    }
+  }
+
+  async function exportFromBrowser() {
+    setExporting(true)
+    setExportError('')
+    try {
+      const { downloadBrowserWorkbook } = await import('./browser-workspace')
+      await downloadBrowserWorkbook()
+    } catch {
+      setExportError('Impossible de générer le fichier Excel.')
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -328,10 +343,10 @@ function App({ hosted, onLogout }: { hosted: boolean; onLogout: () => void }) {
               {item === 'shortlist' && <span className="nav-count">{shortlist.length}</span>}
             </button>
           ))}
-          {hosted && <button type="button" className="workspace-link" onClick={onLogout}>Se déconnecter</button>}
+          {hosted && !browserPreview && <button type="button" className="workspace-link" onClick={onLogout}>Se déconnecter</button>}
         </nav>
         <div className="nav-footer">
-          <p>{hosted ? 'Espace client privé' : 'Données sur ce PC'}</p>
+          <p>{browserPreview ? 'Données dans ce navigateur' : hosted ? 'Espace client privé' : 'Données sur ce PC'}</p>
           {configuration.version && <p>Version {configuration.version}</p>}
         </div>
       </aside>
@@ -361,6 +376,12 @@ function App({ hosted, onLogout }: { hosted: boolean; onLogout: () => void }) {
             </div>
           )}
         </header>
+
+        {browserPreview && (
+          <p className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-950">
+            Espace sans connexion. Les décisions et les sources ajoutées sont enregistrées dans ce navigateur.
+          </p>
+        )}
 
         {section === 'research' && <>
         {showMissions && (
@@ -559,12 +580,13 @@ function App({ hosted, onLogout }: { hosted: boolean; onLogout: () => void }) {
         {section === 'shortlist' && <section aria-labelledby="shortlist-heading" className="surface mt-4 p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 id="shortlist-heading" className="text-xl font-semibold">Prospects approuvés ({shortlist.length})</h2>
-            {shortlist.length > 0 && (
-              <a href="/api/shortlist/export.xlsx" download className="rounded-lg bg-forest px-4 py-2 font-semibold text-white">
-                Exporter Excel
-              </a>
-            )}
+            {shortlist.length > 0 && (browserPreview
+              ? <button type="button" disabled={exporting} className="primary-button" onClick={() => void exportFromBrowser()}>
+                  {exporting ? 'Export en cours…' : 'Exporter Excel'}
+                </button>
+              : <a href="/api/shortlist/export.xlsx" download className="primary-button">Exporter Excel</a>)}
           </div>
+          {exportError && <p role="alert" className="mt-3 text-sm text-rose-800">{exportError}</p>}
           {shortlist.length > 0 && <label className="mt-4 block max-w-lg text-sm font-semibold">Filtrer la liste prioritaire
             <input type="search" className={inputClass} placeholder="Entreprise, produit, marché, responsable…" value={shortlistQuery}
               onChange={event => setShortlistQuery(event.target.value)} />
@@ -618,7 +640,9 @@ function Portal() {
     setChecking(true)
     setProblem('')
     try {
-      setStatus(await accessStatus())
+      const next = await accessStatus()
+      if (next.browserPreview) useBrowserWorkspace(next.version ?? '')
+      setStatus(next)
     } catch {
       setProblem('L’espace est temporairement indisponible. Réessayez dans un instant.')
     } finally {
@@ -666,10 +690,10 @@ function Portal() {
     }
   }
 
-  if (status?.authenticated) {
+  if (status && (status.authenticated || status.browserPreview)) {
     return <>
       {problem && <p role="alert" className="p-4 text-center text-rose-800">{problem}</p>}
-      <App hosted={status.hosted} onLogout={() => void disconnect()} />
+      <App hosted={status.hosted} browserPreview={Boolean(status.browserPreview)} onLogout={() => void disconnect()} />
     </>
   }
 

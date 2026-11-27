@@ -1,6 +1,8 @@
 # Mettre HA Prospection en ligne avec Netlify
 
-Le client ouvre l’adresse HTTPS de l’application, se connecte et retrouve directement la sélection préparée. Les données sont dans Supabase PostgreSQL.
+Sans configuration Supabase, le client ouvre l’adresse HTTPS et accède directement à la sélection préparée. Il peut examiner les fiches, enregistrer ses décisions et exporter vers Excel. Les données ajoutées restent dans ce navigateur et les recherches web supplémentaires sont indisponibles.
+
+Configurez Supabase si vous voulez un espace protégé par une connexion qui conserve les données en ligne. Les décisions stockées auparavant dans le navigateur restent sur cet appareil et ne sont pas transférées automatiquement.
 
 ## 1. Préparer Supabase
 
@@ -26,7 +28,7 @@ Gardez le mot de passe de la base et la clé Brave dans Netlify. Après avoir aj
 
 ## 3. Vérifier avant de partager le lien
 
-1. Ouvrez `https://VOTRE-SITE.netlify.app/api/auth/status` dans une fenêtre privée. Avant connexion, cette adresse doit renvoyer `{"hosted":true,"authenticated":false}`. Si la réponse inclut `"configured":false`, vérifiez les quatre variables Supabase et relancez le déploiement.
+1. Ouvrez `https://VOTRE-SITE.netlify.app/api/auth/status` dans une fenêtre privée. Avant connexion, cette adresse doit renvoyer `{"hosted":true,"authenticated":false}`. Si la réponse inclut `"browserPreview":true`, Netlify sert encore la version sans compte. Vérifiez les quatre variables Supabase et relancez le déploiement pour activer la connexion.
 2. Ouvrez l’adresse principale et connectez-vous avec le compte client. Vérifiez que la sélection préparée apparaît, puis enregistrez une décision et vérifiez l’export Excel.
 3. Si la clé Brave est configurée, lancez une recherche et observez sa progression. Le traitement planifié s’exécute chaque minute sur le déploiement de production.
 

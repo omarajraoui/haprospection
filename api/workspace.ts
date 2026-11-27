@@ -38,7 +38,7 @@ function cloudConfigured() {
 }
 
 export async function handleWorkspace(
-  request: Request, { scheduledResearch = Boolean(process.env.CRON_SECRET) } = {},
+  request: Request, { scheduledResearch = Boolean(process.env.CRON_SECRET), browserPreview = false } = {},
 ) {
   const searchEnabled = () => Boolean(process.env.BRAVE_SEARCH_API_KEY?.trim() && scheduledResearch)
   const url = new URL(request.url)
@@ -56,7 +56,9 @@ export async function handleWorkspace(
       return json({ authenticated: false }, 200, { 'Set-Cookie': await logout(request) })
     }
     if (path === 'auth/status' && method === 'GET' && !cloudConfigured()) {
-      return json({ hosted: true, authenticated: false, configured: false })
+      return json(browserPreview
+        ? { hosted: true, authenticated: false, browserPreview: true, version: manifest.version }
+        : { hosted: true, authenticated: false, configured: false })
     }
     const owner = await currentOwner(request)
     if (path === 'auth/status' && method === 'GET') return json({ hosted: true, authenticated: Boolean(owner) })

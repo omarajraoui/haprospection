@@ -1,7 +1,17 @@
 import type { Search } from './prospects'
 import type { Decision, EvidenceInput, FollowUp, Session, Source } from './research'
 
+let browserVersion: string | undefined
+
+export function useBrowserWorkspace(version: string) {
+  browserVersion = version
+}
+
 async function request<T>(path: string, method = 'GET', body?: object): Promise<T> {
+  if (browserVersion !== undefined && !path.startsWith('/api/auth/')) {
+    const { browserRequest } = await import('./browser-workspace')
+    return browserRequest(path, method, body, browserVersion) as T
+  }
   const response = await fetch(path, {
     method,
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
@@ -39,7 +49,7 @@ export const saveFollowUp = (sessionId: string, leadId: string, followUp: Follow
 export const discoveryConfig = () => request<{ enabled: boolean; version: string; logPath: string }>('/api/discovery')
 export const retryDiscovery = (id: string) => request<Session>(`/api/sessions/${id}/retry`, 'POST', {})
 
-export type AccessStatus = { hosted: boolean; authenticated: boolean; configured?: boolean }
+export type AccessStatus = { hosted: boolean; authenticated: boolean; configured?: boolean; browserPreview?: boolean; version?: string }
 export const accessStatus = () => request<AccessStatus>('/api/auth/status')
 export const signIn = (email: string, password: string) =>
   request<{ authenticated: boolean }>('/api/auth/login', 'POST', { email, password })
