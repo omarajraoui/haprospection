@@ -77,3 +77,13 @@ test('queues one registry lookup per candidate and preserves results after a fai
   assert.equal(payload.leads[0].qualification.identity, 'verified')
   assert.equal(payload.leads[0].evidence.filter(item => item.field === 'Identité déclarée au registre').length, 1)
 })
+
+test('uses custom origin in discovery and reports it as unconfirmed when absent from the evidence', () => {
+  const criteria = { product: 'Mangues', origin: 'Côte d’Ivoire', market: 'Belgique', role: 'Acheteurs' }
+  assert.ok(discoveryTasks(criteria).every(task => task.input.includes('Mangues Belgique origine Côte d’Ivoire')))
+  const check = html => qualifyPage(url, html, criteria.product, criteria.role, criteria.market, criteria.origin)
+  assert.deepEqual(check('<p>Acheteur de mangues en Belgique.</p>').qualification.origin,
+    { requested: 'Côte d’Ivoire', mentioned: false })
+  assert.deepEqual(check('<p>Acheteur de mangues de Côte d’Ivoire en Belgique.</p>').qualification.origin,
+    { requested: 'Côte d’Ivoire', mentioned: true })
+})

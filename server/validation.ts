@@ -14,6 +14,15 @@ export function field(value: unknown, maximum: number) {
   return value.trim()
 }
 
+export function searchCriteria(body: Record<string, unknown>) {
+  return {
+    product: field(body.product, 100),
+    market: field(body.market, 100),
+    role: field(body.role, 100),
+    origin: body.origin === undefined || body.origin === '' ? undefined : field(body.origin, 100),
+  }
+}
+
 export function dateField(value: unknown, optional = false) {
   if (optional && value === '') return ''
   const date = field(value, 10)

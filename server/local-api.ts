@@ -13,7 +13,7 @@ import { discoveryWorker } from './discovery-worker.ts'
 import { fetchTedOpportunities } from './opportunities.ts'
 import { shortlistWorkbook } from './workbook.ts'
 
-import { dateField, field, RequestError, sourceUrl } from './validation.ts'
+import { dateField, field, RequestError, searchCriteria, sourceUrl } from './validation.ts'
 
 async function readJson(request: IncomingMessage) {
   const origin = request.headers.origin
@@ -146,9 +146,7 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
       }
       if (path === '/api/sessions' && request.method === 'POST') {
         const body = await readJson(request)
-        const search = {
-          product: field(body.product, 100), market: field(body.market, 100), role: field(body.role, 100),
-        }
+        const search = searchCriteria(body)
         if (body.mode !== 'live') throw new RequestError(400, 'La recherche utilise uniquement des sources web.')
         if (!searchKey) throw new RequestError(503, 'Le service de recherche web est à connecter.')
         const id = randomUUID()

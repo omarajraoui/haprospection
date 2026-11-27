@@ -2,27 +2,30 @@ type Props = {
   candidateCount: number
   approvedCount: number
   onFirstBuyer: () => void
+  onSearch: () => void
   onCompare: () => void
   onFollowUp: () => void
 }
 
-export function StartHere({ candidateCount, approvedCount, onFirstBuyer, onCompare, onFollowUp }: Props) {
+export function StartHere({ candidateCount, approvedCount, onFirstBuyer, onSearch, onCompare, onFollowUp }: Props) {
   return (
     <div className="space-y-6">
       <section className="start-hero" aria-labelledby="start-title">
-        <p className="text-sm font-semibold text-emerald-100">Première sélection · Conserves de poisson · Maroc → France</p>
+        <p className="text-sm font-semibold text-emerald-100">Prospection agroalimentaire</p>
         <h1 id="start-title" className="mt-3 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-          Trouvez des acheteurs pour vos produits marocains
+          Trouvez des acheteurs et des fournisseurs agroalimentaires
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-emerald-50">
-          Ouvrez une fiche déjà documentée, vérifiez si l’entreprise correspond à votre offre, puis préparez votre liste de contacts et de relances.
+          Choisissez un produit et un pays, vérifiez les sources des entreprises repérées et préparez vos relances.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <button type="button" className="start-action" disabled={candidateCount === 0} onClick={onFirstBuyer}>
-            Examiner un premier acheteur
+          <button type="button" className="start-action" onClick={onSearch}>
+            Chercher des entreprises
           </button>
           <button type="button" className="rounded-lg border border-emerald-100/60 px-4 py-3 font-semibold text-white hover:bg-white/10"
-            onClick={onCompare}>Comparer les produits et les acheteurs</button>
+            onClick={onCompare}>Voir le corridor Maroc → France</button>
+          {candidateCount > 0 && <button type="button" className="px-3 py-3 font-semibold text-white underline"
+            onClick={onFirstBuyer}>Examiner un premier acheteur</button>}
         </div>
       </section>
 

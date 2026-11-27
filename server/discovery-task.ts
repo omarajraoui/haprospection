@@ -39,7 +39,7 @@ export async function processDiscoveryTask(
       if (kind === 'directory' || kind === 'registry') {
         task.detail = kind === 'directory' ? 'Annuaire : piste à recouper.' : 'Registre : à consulter pour vérifier une entreprise.'
       } else {
-        const lead = qualifyPage(task.input, await providers.readPage(task.input), payload.search.product, payload.search.role, payload.search.market)
+        const lead = qualifyPage(task.input, await providers.readPage(task.input), payload.search.product, payload.search.role, payload.search.market, payload.search.origin)
         if (lead) {
           const existing = payload.leads.find(item => item.id === lead.id)
           if (!existing) {

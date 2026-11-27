@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { load } from 'cheerio'
 import ipaddr from 'ipaddr.js'
 import { sourceKind } from '../src/source-quality.ts'
+import { searchQueries } from '../src/missions.ts'
 import type { Lead, Search } from '../src/prospects.ts'
 import type { DiscoveryTask } from '../src/research.ts'
 
@@ -22,13 +23,7 @@ export function retryFailedTasks(tasks: Task[]) {
 }
 
 export function discoveryTasks(search: Search): Task[] {
-  const criteria = `${search.product} ${search.market}`
-  const alternative = search.role === 'Fournisseurs' ? 'fabricant exportateur catalogue'
-    : search.role === 'Acheteurs' ? 'approvisionnement acheteur professionnel'
-    : 'grossiste importateur catalogue'
-  return [`${criteria} ${search.role}`, `${criteria} ${alternative}`].map(input => ({
-    kind: 'search', input, state: 'queued',
-  }))
+  return searchQueries(search).map(({ query }) => ({ kind: 'search', input: query, state: 'queued' }))
 }
 
 export async function braveSearch(query: string, key: string): Promise<string[]> {
@@ -149,7 +144,7 @@ function mentions(text: string, term: string) {
   return term !== '' && ` ${normalized(text)} `.includes(` ${normalized(term)} `)
 }
 
-export function qualifyPage(input: string, html: string, product: string, role = '', market = ''): Lead | undefined {
+export function qualifyPage(input: string, html: string, product: string, role = '', market = '', requestedOrigin?: string): Lead | undefined {
   const url = publicUrl(input)
   const kind = sourceKind(url.href)
   if (kind === 'directory' || kind === 'registry') return undefined
@@ -169,7 +164,7 @@ export function qualifyPage(input: string, html: string, product: string, role =
 
   // Keep the product terms distinct from country of origin in the prepared trade corridor.
   const originMatch = product.match(/\s+(?:du|d['’]|de)\s*(Maroc|France|Espagne|Sénégal)\s*$/i)
-  const origin = originMatch?.[1]
+  const origin = requestedOrigin || originMatch?.[1]
   const terms = [...new Set(tokens(originMatch ? product.slice(0, originMatch.index) : product))]
   if (!terms.length) return undefined
   const rolePredicate = rolePattern(role)

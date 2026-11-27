@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useState, type FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
-import { defaultSearch, type Lead, type Search } from './prospects'
+import { type Lead, type Search } from './prospects'
 import { accessStatus, signIn, signOut, useBrowserWorkspace, type AccessStatus, attachEvidence, createSession, createSource, discoveryConfig, loadSessions, loadSources, retryDiscovery, saveFollowUp, saveReview } from './api'
 import { approvedLeads, canApproveLead, decisions, type Decision, type EvidenceInput, type Review, type Session, type Source } from './research'
 import { EvidenceForm, FollowUpForm, Resources, inputClass } from './resources'
@@ -8,7 +8,7 @@ import { matchesLead, searchable, type EvidenceFilter, type ReviewFilter } from 
 import { sourceKind, sourceKinds } from './source-quality'
 import { StartHere } from './start-here'
 import { CorridorView } from './corridor-view'
-import { missions } from './missions'
+import { SearchPanel } from './search-panel'
 import './styles.css'
 
 const statusLabels = {
@@ -194,7 +194,7 @@ function Guide({ onSearch }: { onSearch: () => void }) {
         <p className="mt-2 text-slate-600">Commencez par examiner les entreprises et leurs sources dans la sélection préparée. Lancez une nouvelle recherche si vous souhaitez trouver d’autres prospects.</p>
       </div>
       <ol className="space-y-4 pl-5 text-slate-700 marker:font-semibold marker:text-forest list-decimal">
-        <li><strong>Ouvrir la sélection.</strong> Les premières fiches sont disponibles dès l’ouverture. <em>Nouvelle recherche</em> permet d’élargir la sélection avec une mission ou vos propres critères lorsque le service web est connecté.</li>
+        <li><strong>Ouvrir la sélection.</strong> Les premières fiches sont disponibles dès l’ouverture. <em>Nouvelle recherche</em> permet d’élargir la sélection avec vos propres critères, avec une recherche automatique si le service web est connecté ou des requêtes guidées à ouvrir dans votre navigateur.</li>
         <li><strong>Filtrer les résultats.</strong> Tapez un nom, un contact ou une source. Cliquez sur <em>À examiner</em> pour afficher les décisions en attente. Le filtre <em>État des preuves</em> permet par exemple d’isoler les contacts manquants.</li>
         <li><strong>Examiner une fiche.</strong> Ouvrez les extraits et leurs sources. Ajoutez une source depuis <em>Ressources</em>, puis rattachez-la à la fiche si nécessaire.</li>
         <li><strong>Décider et exporter.</strong> Approuvez, signalez ou écartez le prospect avec un motif. Les prospects approuvés vont dans la suivi des prospects pour préparer les relances et exporter vers Excel.</li>
@@ -208,12 +208,10 @@ function Guide({ onSearch }: { onSearch: () => void }) {
 function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPreview: boolean; onLogout: () => void }) {
   const [section, setSection] = useState<Section>('home')
   const [showMissions, setShowMissions] = useState(false)
-  const [showSearch, setShowSearch] = useState(false)
   const [query, setQuery] = useState('')
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('all')
   const [evidenceFilter, setEvidenceFilter] = useState<EvidenceFilter>('all')
   const [shortlistQuery, setShortlistQuery] = useState('')
-  const [search, setSearch] = useState(defaultSearch)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState('')
   const [configuration, setConfiguration] = useState({ enabled: false, version: '', logPath: '' })
@@ -272,7 +270,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
 
   async function launch(criteria: Search) {
     const product = criteria.product.trim()
-    if (!product || !liveEnabled || starting || loading || running) return
+    if (!product || !liveEnabled || starting || loading || hasQueued) return
     setError('')
     setStarting(true)
     try {
@@ -281,7 +279,6 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
       setActiveId(session.id)
       setSelected(session.leads[0]?.id ?? '')
       resetFilters()
-      setShowSearch(false)
       setShowMissions(false)
       requestAnimationFrame(() => document.getElementById('session-activity')?.focus())
     } catch (error) {
@@ -302,6 +299,12 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
     } finally {
       setExporting(false)
     }
+  }
+
+  function openSearch() {
+    navigate('research')
+    setShowMissions(true)
+    requestAnimationFrame(() => document.getElementById('search-heading')?.focus())
   }
 
   function navigate(next: Section) {
@@ -327,7 +330,6 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
     setActiveId(session.id)
     setSelected(leadId)
     resetFilters()
-    setShowSearch(false)
     setShowMissions(false)
   }
 
@@ -424,7 +426,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
 
         {section === 'home' && (
           <StartHere candidateCount={catalogue?.leads.length ?? 0} approvedCount={shortlist.length}
-            onFirstBuyer={() => openPreparedBuyer()} onCompare={() => navigate('corridor')}
+            onFirstBuyer={() => openPreparedBuyer()} onSearch={openSearch} onCompare={() => navigate('corridor')}
             onFollowUp={() => navigate('shortlist')} />
         )}
         {section === 'home' && error && <p role="alert" className="mt-4 text-rose-800">{error}</p>}
@@ -441,62 +443,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
         {section === 'corridor' && loading && <p role="status">Ouverture du corridor…</p>}
         {section === 'corridor' && error && <p role="alert" className="mt-4 text-rose-800">{error}</p>}
         {section === 'research' && <>
-        {showMissions && (
-          <section id="web-search-options" aria-labelledby="missions-heading" className="surface p-5 sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 id="missions-heading" className="text-xl font-semibold">Missions prêtes à lancer</h2>
-              <span className="mode-label">{loading ? 'Vérification du service…' : liveEnabled ? 'Recherche web disponible' : 'Service web à connecter'}</span>
-            </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              {missions.map(mission => (
-                <article key={mission.id} className="flex flex-col items-start rounded-xl border border-[#d9e3de] bg-paper p-4">
-                  <h3 className="font-semibold">{mission.title}</h3>
-                  <p className="my-2 text-sm text-slate-600">{mission.search.product} · {mission.search.market}</p>
-                  <button type="button" className="primary-button mt-auto" disabled={!liveEnabled || loading || starting || running}
-                    aria-label={`Lancer la mission : ${mission.title}`}
-                    onClick={() => void launch(mission.search)}>
-                    Lancer la mission
-                  </button>
-                </article>
-              ))}
-            </div>
-            {!loading && !liveEnabled && (
-              <p className="mt-3 text-sm text-slate-600">Pour lancer une recherche, connectez le service web lors de l’installation. Les résultats déjà enregistrés restent disponibles.</p>
-            )}
-            <button type="button" className="secondary-button mt-4" aria-expanded={showSearch}
-              aria-controls="search-form" onClick={() => {
-                setShowSearch(!showSearch)
-                if (!showSearch) requestAnimationFrame(() => document.getElementById('search-product')?.focus())
-              }}>
-              {showSearch ? 'Masquer la recherche personnalisée' : 'Personnaliser une recherche'}
-            </button>
-          </section>
-        )}
-        <form id="search-form" onSubmit={event => { event.preventDefault(); void launch(search) }}
-          className="surface mt-4 p-5 sm:p-6" hidden={!showMissions || !showSearch}>
-          <h2 className="mb-4 text-lg font-semibold">Critères de recherche</h2>
-          <fieldset disabled={running || starting || loading} className="grid gap-4 disabled:opacity-70 md:grid-cols-3">
-            <label className="text-sm font-semibold">Produit
-              <input id="search-product" className={inputClass} required pattern={String.raw`.*\S.*`} maxLength={100} value={search.product}
-                onChange={(event) => setSearch({ ...search, product: event.target.value })} />
-            </label>
-            <label className="text-sm font-semibold">Marché
-              <select className={inputClass} value={search.market}
-                onChange={(event) => setSearch({ ...search, market: event.target.value })}>
-                <option>France</option><option>Maroc</option><option>Espagne</option><option>Sénégal</option>
-              </select>
-            </label>
-            <label className="text-sm font-semibold">Type d’entreprise
-              <select className={inputClass} value={search.role}
-                onChange={(event) => setSearch({ ...search, role: event.target.value })}>
-                <option>Importateurs et distributeurs</option><option>Fournisseurs</option><option>Acheteurs</option>
-              </select>
-            </label>
-            <button type="submit" disabled={!liveEnabled} className="self-end rounded-lg bg-forest px-4 py-3 font-semibold text-white enabled:hover:bg-emerald-900 disabled:cursor-wait">
-              {running || starting ? 'Recherche en cours…' : 'Lancer la recherche'}
-            </button>
-          </fieldset>
-        </form>
+        {showMissions && <SearchPanel live={liveEnabled} loading={loading} busy={starting || (liveEnabled && hasQueued)} onLaunch={launch} />}
 
         {error && <p role="alert" className="mt-4 rounded-lg bg-rose-50 p-3 text-rose-900">{error}</p>}
 
@@ -530,7 +477,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
         {run?.mode === 'live' && (
           <section aria-labelledby="session-activity" className="surface mt-4 p-5 sm:p-6">
             <h2 id="session-activity" tabIndex={-1} className="text-xl font-semibold">Activité de la session</h2>
-            <p className="mt-1 text-sm text-stone-700">{run.search.product} · {run.search.market} · {run.search.role}</p>
+            <p className="mt-1 text-sm text-stone-700">{run.search.product} · {run.search.origin && `Origine ${run.search.origin} · `}{run.search.market} · {run.search.role}</p>
             <p role="status" className="mt-3 font-medium">
               {liveRunning ? liveEnabled ? 'Recherche en cours…' : 'Recherche en attente de la connexion au service web.'
                 : run.tasks?.filter(task => task.kind === 'search').every(task => task.state === 'failed')
@@ -680,7 +627,7 @@ function App({ hosted, browserPreview, onLogout }: { hosted: boolean; browserPre
           const source = await createSource(input)
           setSources(previous => [...previous, source].sort((first, second) => first.name.localeCompare(second.name, 'fr')))
         }} />}
-        {section === 'guide' && <Guide onSearch={() => navigate('research')} />}
+        {section === 'guide' && <Guide onSearch={openSearch} />}
         {configuration.logPath && (
           <footer className="mt-7 space-y-1 break-words text-sm text-stone-700">
             <p>Journal local · {configuration.logPath}</p>

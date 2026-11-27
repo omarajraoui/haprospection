@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.0-rc.8
+
+La recherche est accessible depuis l’accueil. Ses critères distinguent le produit, son origine et le pays des entreprises ciblées. Le mode public prépare des requêtes guidées pour tout produit. Les espaces avec le service connecté utilisent les mêmes critères pour la recherche automatique.
+
 ## v1.0.0-rc.7
 
 Le corridor affiche le nombre d’entreprises par produit, des exemples de recettes et de formats sourcés, et une recherche par nom facultative. La sélection inclut le thon, le grossiste Yuly Food et la conserverie Conserval. Les espaces existants reçoivent le nouveau prospect avec leurs décisions et preuves déjà enregistrées.

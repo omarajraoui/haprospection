@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { PoolClient } from 'pg'
 import preparedCatalogue from '../prepared-catalogue.json' with { type: 'json' }
 import { appendPreparedLeads, canApproveLead, decisions, type Decision, type Review, type Session, type Source } from '../../src/research.ts'
-import { dateField, field, RequestError, sourceUrl } from '../validation.ts'
+import { dateField, field, RequestError, searchCriteria, sourceUrl } from '../validation.ts'
 import { discoveryTasks, retryFailedTasks } from '../discovery.ts'
 import { database, transaction } from './database.ts'
 import { uuid } from './auth.ts'
@@ -47,7 +47,7 @@ export async function sessions(owner: string): Promise<Session[]> {
 
 export async function startSearch(owner: string, body: Record<string, unknown>) {
   if (body.mode !== 'live') throw new RequestError(400, 'La recherche utilise uniquement des sources web.')
-  const search = { product: field(body.product, 100), market: field(body.market, 100), role: field(body.role, 100) }
+  const search = searchCriteria(body)
   const session: Session = {
     id: randomUUID(), mode: 'live', search, tasks: discoveryTasks(search), leads: [],
     createdAt: new Date().toISOString(), reviews: {}, followUps: {},

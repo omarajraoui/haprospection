@@ -4,7 +4,7 @@ export const defaultSearch = {
   role: 'Importateurs et distributeurs',
 }
 
-export type Search = typeof defaultSearch
+export type Search = typeof defaultSearch & { origin?: string }
 export type Evidence = {
   id?: number
   manual?: boolean

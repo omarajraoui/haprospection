@@ -24,7 +24,7 @@ Suivez le [guide d’installation Windows](INSTALLATION-WINDOWS.md). Il détaill
 
 ### Commandes d’installation et de démarrage
 
-La version candidate est `v1.0.0-rc.7`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
+La version candidate est `v1.0.0-rc.8`. Dans le dossier extrait qui contient `package.json`, ouvrez PowerShell et exécutez les commandes suivantes dans l’ordre.
 
 ```powershell
 npm.cmd ci
@@ -53,7 +53,9 @@ export BRAVE_SEARCH_API_KEY
 npm start
 ```
 
-Dans **Prospects**, cliquez sur **Nouvelle recherche**, choisissez une mission ou personnalisez le produit, le marché et le type d’entreprise. L’application utilise Brave pour trouver des liens, lit les pages accessibles et présente les mentions de produits comme des pistes à examiner. Chaque session lance deux requêtes et traite jusqu’à dix pages. Pour le marché français, un SIREN ou SIRET publié sur une page peut déclencher un contrôle auprès du registre public. Les recherches peuvent être facturées selon votre offre Brave.
+Depuis l’accueil, cliquez sur **Chercher des entreprises**. Choisissez un exemple ou saisissez le produit, son origine si nécessaire, le pays où chercher et le type d’entreprise. Sans service web connecté, **Préparer ma recherche guidée** génère des requêtes à ouvrir dans Google. Vous pouvez conserver un lien utile dans **Ressources**.
+
+Quand la recherche automatique est configurée, l’application utilise Brave pour trouver des liens, lit les pages accessibles et présente les mentions de produits comme des pistes à examiner. Chaque session lance deux requêtes et traite jusqu’à dix pages. Pour le marché français, un SIREN ou SIRET publié sur une page peut déclencher un contrôle auprès du registre public. Les recherches peuvent être facturées selon votre offre Brave.
 
 Dans **Activité de la session**, ouvrez **Requêtes et pages consultées** pour voir les sources et les éventuels échecs. Si la recherche est partielle, les résultats déjà trouvés restent disponibles. Utilisez **Relancer les étapes en échec** pour réessayer une fois. Vérifiez l’identité, la gamme et la pertinence avant d’approuver un candidat.
 
