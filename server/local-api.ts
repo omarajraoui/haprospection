@@ -130,8 +130,8 @@ function createHandler(database: DatabaseSync, searchKey: string, version: strin
       if (!/^(?:127\.0\.0\.1|localhost)(?::[0-9]+)?$/.test(request.headers.host ?? '')) {
         throw new RequestError(403, 'Accès réservé à cette machine.')
       }
-      if (path === '/api/corridors/maroc-france-conserves/opportunities' && request.method === 'GET') {
-        return send(200, await fetchTedOpportunities())
+      if ((path === '/api/corridors/maroc-france-conserves/opportunities' || path === '/api/market/opportunities') && request.method === 'GET') {
+        return send(200, await fetchTedOpportunities(path === '/api/market/opportunities'))
       }
       if (path === '/api/auth/status' && request.method === 'GET') {
         return send(200, { hosted: false, authenticated: true })

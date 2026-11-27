@@ -48,8 +48,8 @@ export async function handleWorkspace(
     ? url.searchParams.get('route') ?? ''
     : url.pathname.replace(/^\/api\//, '')
   try {
-    if (path === 'corridors/maroc-france-conserves/opportunities' && method === 'GET') {
-      return json(await fetchTedOpportunities(), 200, { 'Cache-Control': 'public, max-age=60, s-maxage=300' })
+    if ((path === 'corridors/maroc-france-conserves/opportunities' || path === 'market/opportunities') && method === 'GET') {
+      return json(await fetchTedOpportunities(path === 'market/opportunities'), 200, { 'Cache-Control': 'public, max-age=60, s-maxage=300' })
     }
     if (method === 'POST' || method === 'PUT') verifyOrigin(request, url)
     if (path === 'auth/login' && method === 'POST') {

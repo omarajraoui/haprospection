@@ -138,6 +138,7 @@ export type Opportunity = {
   id: string
   title: string
   buyer: string | null
+  country?: string
   deadline: string
   published: string | null
   codes: string[]

@@ -21,15 +21,17 @@ function writeLocal(key: string, value: string) {
   try { localStorage.setItem(key, value) } catch { /* A browsing session can continue without saved preferences. */ }
 }
 
-function OpportunityView({ followed }: { followed: boolean }) {
+export function OpportunityView({ followed = false, international = false }: { followed?: boolean; international?: boolean }) {
   const [feed, setFeed] = useState<OpportunityFeed>()
   const [error, setError] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  const [query, setQuery] = useState('')
+  const [country, setCountry] = useState('')
   const [newIds, setNewIds] = useState<string[]>([])
 
   useEffect(() => {
     const controller = new AbortController()
-    fetch('/api/corridors/maroc-france-conserves/opportunities', { signal: controller.signal })
+    fetch(international ? '/api/market/opportunities' : '/api/corridors/maroc-france-conserves/opportunities', { signal: controller.signal })
       .then(async response => {
         if (!response.ok) throw new Error('TED unavailable')
         return await response.json() as OpportunityFeed
@@ -47,7 +49,11 @@ function OpportunityView({ followed }: { followed: boolean }) {
         if (!controller.signal.aborted) setError(true)
       })
     return () => controller.abort()
-  }, [attempt, followed])
+  }, [attempt, followed, international])
+
+  const countries = [...new Set(feed?.opportunities.flatMap(item => item.country ? [item.country] : []))].sort()
+  const visible = feed?.opportunities.filter(item => (!country || item.country === country)
+    && searchable([item.title, item.buyer, ...item.lotTitles, ...item.codes].join(' ')).includes(searchable(query.trim()))) ?? []
 
   return (
     <section aria-labelledby="opportunity-heading" className="surface p-5 sm:p-7">
@@ -55,24 +61,42 @@ function OpportunityView({ followed }: { followed: boolean }) {
         <div>
           <h2 id="opportunity-heading" className="text-xl font-semibold">Demandes d’achat publiques</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Avis TED publiés par des acheteurs français, pour les catégories de poisson sélectionnées et avec une échéance future identifiable.
+            {international ? 'Avis publics TED pour les denrées alimentaires et les produits agricoles, avec une échéance future identifiable.'
+              : 'Avis TED publiés par des acheteurs français, pour les catégories de poisson sélectionnées et avec une échéance future identifiable.'}
           </p>
         </div>
         <button className="secondary-button" type="button" onClick={() => {
-          setFeed(undefined); setError(false); setAttempt(value => value + 1)
+          setFeed(undefined)
+          setError(false)
+          setCountry('')
+          setAttempt(value => value + 1)
         }}>Actualiser les avis</button>
       </div>
+      {international && !!feed?.opportunities.length && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="text-sm font-semibold">Produit, acheteur ou code CPV
+            <input type="search" className={inputClass} value={query} onChange={event => setQuery(event.target.value)} />
+          </label>
+          <label className="text-sm font-semibold">Pays de l’acheteur
+            <select className={inputClass} value={country} onChange={event => setCountry(event.target.value)}>
+              <option value="">Tous les pays de cette sélection</option>
+              {countries.map(code => <option key={code}>{code}</option>)}
+            </select>
+          </label>
+        </div>
+      )}
       {error ? <p role="status" className="mt-5 rounded-lg bg-amber-50 p-4 text-amber-900">TED est momentanément indisponible. Réessayez ou consultez le portail officiel.</p>
         : !feed ? <p role="status" className="mt-5">Consultation des avis TED…</p>
           : feed.opportunities.length === 0 ? <p role="status" className="mt-5 rounded-lg bg-paper p-4">Aucun avis avec une échéance future exploitable dans la sélection consultée.</p>
-            : <ul className="mt-4 divide-y divide-stone-200">
-              {feed.opportunities.map(item => (
+            : visible.length === 0 ? <p role="status" className="mt-5">Aucun avis ne correspond aux filtres.</p>
+              : <ul className="mt-4 divide-y divide-stone-200">
+              {visible.map(item => (
                 <li key={item.id} className="py-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <a className="font-semibold text-forest underline" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
                     <span className="mode-label">{newIds.includes(item.id) ? 'Nouveau · ' : ''}Échéance le {showDay(item.deadline)}</span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">{item.buyer ?? 'Acheteur à consulter dans l’avis'} · TED {item.id}</p>
+                  <p className="mt-2 text-sm text-slate-700">{item.buyer ?? 'Acheteur à consulter dans l’avis'}{international && item.country && ` · ${item.country}`} · TED {item.id}</p>
                   <p className="mt-1 text-sm text-slate-600">CPV {item.codes.join(', ')}{item.published && ` · Publié le ${showDay(item.published)}`}</p>
                   {item.lotTitles.length > 0 && <p className="mt-2 text-sm text-slate-700">Lots repérés · {item.lotTitles.join(' · ')}</p>}
                   <p className="mt-1 text-sm text-slate-600">Spécifications et volume à confirmer dans l’avis.</p>

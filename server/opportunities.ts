@@ -4,8 +4,8 @@ const codes = ['15240000', '15241000', '15241300', '15241400', '15241500', '1524
 const fields = ['publication-number', 'notice-title', 'deadline-receipt-tender-date-lot', 'buyer-name', 'classification-cpv',
   'notice-type', 'publication-date', 'organisation-country-buyer', 'BT-21-Lot']
 const publicationDays = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' })
-let inFlight: Promise<OpportunityFeed> | undefined
-let cached: { value: OpportunityFeed; until: number } | undefined
+const inFlight = new Map<boolean, Promise<OpportunityFeed>>()
+const cache = new Map<boolean, { value: OpportunityFeed; until: number }>()
 
 function texts(value: unknown): string[] {
   if (typeof value === 'string') return [value]
@@ -29,40 +29,42 @@ function isoDate(value: string) {
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === date ? date : undefined
 }
 
-export function activeTedNotices(notices: unknown[], today: string): Opportunity[] {
+export function activeTedNotices(notices: unknown[], today: string, international = false): Opportunity[] {
   const unique = new Map<string, Opportunity>()
   for (const item of notices) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const row = item as Record<string, unknown>
     const id = row['publication-number']
-    const relevant = [...new Set(texts(row['classification-cpv']).filter(code => codes.includes(code)))]
+    const relevant = [...new Set(texts(row['classification-cpv']).filter(code => international ? /^(03|15)\d{6}$/.test(code) : codes.includes(code)))]
     const dates = texts(row['deadline-receipt-tender-date-lot']).map(isoDate)
     const deadline = dates[0]
     if (typeof id !== 'string' || !/^\d{1,8}-\d{4}$/.test(id) || !relevant.length
-      || !texts(row['organisation-country-buyer']).includes('FRA')
+      || (!international && !texts(row['organisation-country-buyer']).includes('FRA'))
       || !['cn-standard', 'cn-social', 'cn-desg', 'subco'].includes(String(row['notice-type']))
       || !deadline || deadline <= today || !dates.every(date => date === deadline)) continue
 
     unique.set(id, {
       id, title: label(row['notice-title']) ?? `Avis TED ${id}`, buyer: label(row['buyer-name']),
-      deadline, published: isoDate(texts(row['publication-date'])[0] ?? '') ?? null, codes: relevant,
+      country: texts(row['organisation-country-buyer'])[0], deadline, published: isoDate(texts(row['publication-date'])[0] ?? '') ?? null, codes: relevant,
       lotTitles: [...new Set(texts(row['BT-21-Lot']).filter(title =>
-        /sardine|maquereau|anchois|\bthon\b|conserves? de poisson/i.test(title)))].slice(0, 5),
+        international || /sardine|maquereau|anchois|\bthon\b|conserves? de poisson/i.test(title)))].slice(0, 5),
       url: `https://ted.europa.eu/fr/notice/-/detail/${id}`,
     })
   }
   return [...unique.values()].sort((first, second) => first.deadline.localeCompare(second.deadline))
 }
 
-export async function fetchTedOpportunities(): Promise<OpportunityFeed> {
+export async function fetchTedOpportunities(international = false): Promise<OpportunityFeed> {
+  const cached = cache.get(international)
   if (cached && Date.now() < cached.until) return cached.value
-  if (inFlight) return inFlight
-  inFlight = (async () => {
+  const pending = inFlight.get(international)
+  if (pending) return pending
+  const request = (async () => {
     const response = await fetch('https://api.ted.europa.eu/v3/notices/search', {
       method: 'POST', signal: AbortSignal.timeout(8000), redirect: 'error',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
-        query: `(${codes.map(code => `classification-cpv = ${code}`).join(' OR ')}) AND organisation-country-buyer = FRA SORT BY publication-date DESC`,
+        query: international ? '(classification-cpv = 03* OR classification-cpv = 15*) AND (notice-type = cn-standard OR notice-type = cn-social OR notice-type = cn-desg OR notice-type = subco) SORT BY publication-date DESC' : `(${codes.map(code => `classification-cpv = ${code}`).join(' OR ')}) AND organisation-country-buyer = FRA SORT BY publication-date DESC`,
         fields, scope: 'ACTIVE', page: 1, limit: 40,
       }),
     })
@@ -72,9 +74,10 @@ export async function fetchTedOpportunities(): Promise<OpportunityFeed> {
     const now = new Date()
     const parts = Object.fromEntries(publicationDays.formatToParts(now).map(part => [part.type, part.value]))
     const today = `${parts.year}-${parts.month}-${parts.day}`
-    const value = { checkedAt: now.toISOString(), opportunities: activeTedNotices(data.notices, today) }
-    cached = { value, until: Date.now() + 300_000 }
+    const value = { checkedAt: now.toISOString(), opportunities: activeTedNotices(data.notices, today, international) }
+    cache.set(international, { value, until: Date.now() + 300_000 })
     return value
-  })().finally(() => { inFlight = undefined })
-  return inFlight
+  })().finally(() => { inFlight.delete(international) })
+  inFlight.set(international, request)
+  return request
 }

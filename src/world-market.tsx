@@ -3,6 +3,8 @@ import { searchable } from './lead-filters'
 import { inputClass } from './resources'
 
 const selection = [
+  { company: 'AGT Foods', product: 'Farines et protéines de légumineuses', category: 'Ingrédients', country: 'Canada', detail: 'Farines, protéines et fibres de légumineuses. Le fabricant indique une unité à Regina, au Canada.', url: 'https://www.agtfoods.com/ingredients' },
+  { company: 'Yuly Food', product: 'Conserves de la mer', category: 'Produits de la mer', country: 'France', detail: 'Grossiste. Le catalogue présente notamment des filets de maquereaux en boîte de 125 g.', url: 'https://epicerie.yulyfood.com/collections/sardines-et-divers-mer' },
   { company: 'MDM Pelagic', product: 'Sardines et maquereaux', category: 'Produits de la mer', country: 'Maroc', detail: 'Conserves de poisson, entières ou en filets selon la gamme.', url: 'https://mdm-pelagic.com/produits/' },
   { company: 'PhilaFrance', product: 'Tomates', category: 'Fruits et légumes', country: 'France', origin: 'Maroc', detail: 'Importateur et exportateur de tomates du Maroc vers l’Europe.', url: 'https://www.groupe-anima.com/nos-entreprises/philafrance/' },
   { company: 'Boudjebel VACPA', product: 'Dattes Deglet Nour', category: 'Fruits et légumes', country: 'Tunisie', detail: 'Exportateur de dattes et fournisseur d’ingrédients à base de dattes.', url: 'https://www.boudjebeldates.com/' },
@@ -24,8 +26,8 @@ export function WorldMarket({ onSearch }: { onSearch: (product: string, country:
   return (
     <section aria-labelledby="world-heading" className="space-y-4">
       <div>
-        <h2 id="world-heading" className="text-2xl font-semibold">Explorer le marché</h2>
-        <p className="mt-1 text-sm text-slate-700">Sélection de fournisseurs et d’importateurs, documentée par leurs sites. Vérifiez les conditions commerciales auprès de l’entreprise.</p>
+        <h2 id="world-heading" className="text-2xl font-semibold">Produits au catalogue</h2>
+        <p className="mt-1 text-sm text-slate-700">Gammes publiées par les entreprises. Demandez le prix, les quantités et les conditions de livraison pour votre commande.</p>
       </div>
       <div className="surface grid gap-3 p-4 sm:grid-cols-3">
         <label className="text-sm font-semibold">Produit ou entreprise
@@ -47,23 +49,18 @@ export function WorldMarket({ onSearch }: { onSearch: (product: string, country:
       </div>
       <p role="status" className="text-sm text-slate-700">{matches.length} {matches.length === 1 ? 'fiche' : 'fiches'} dans la sélection</p>
       {matches.length > 0 && <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {matches.map(item => <li key={item.company} className="surface flex flex-col items-start p-5">
+        {matches.map(item => <li key={item.company} className="market-card">
           <p className="text-sm font-medium text-forest">{item.category} · {item.country}</p>
           <h3 className="mt-1 text-lg font-semibold">{item.product}</h3>
           <p className="text-sm font-medium">{item.company}</p>
           <p className="my-2 text-sm text-slate-700">{item.detail}</p>
           <a className="mt-auto text-sm font-semibold text-forest underline" href={item.url}
-            target="_blank" rel="noreferrer">Consulter la source</a>
+            target="_blank" rel="noreferrer">Ouvrir le catalogue</a>
         </li>)}
       </ul>}
       <div className="surface flex flex-wrap items-center justify-between gap-3 p-4">
         <p className="text-sm text-slate-700">{matches.length ? 'Vous cherchez un autre produit ou un autre pays ?' : 'Aucune fiche dans la sélection pour ces critères.'}</p>
         <button type="button" className="secondary-button" onClick={() => onSearch(query.trim(), country)}>Élargir la recherche</button>
-      </div>
-      <div className="surface p-4">
-        <h3 className="font-semibold">Demandes d’achat publiques</h3>
-        <p className="my-1 text-sm text-slate-700">Consultez les appels d’offres internationaux et filtrez par pays bénéficiaire sur le portail des Nations Unies.</p>
-        <a className="text-sm font-semibold text-forest underline" href="https://www.ungm.org/public/notice" target="_blank" rel="noreferrer">Voir les appels d’offres sur UNGM</a>
       </div>
     </section>
   )

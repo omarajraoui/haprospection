@@ -63,3 +63,12 @@ test('adds prepared prospects without replacing evidence saved by an existing us
   assert.equal(merged[2].name, 'YULY FOOD')
   assert.equal(appendPreparedLeads(merged, preparedCatalogue.leads), merged)
 })
+
+test('accepts foreign agricultural and food notices in the international feed only', () => {
+  const frenchGoods = { ...notice, 'classification-cpv': ['03200000', '15800000', '45000000'] }
+  const foreignGoods = { ...frenchGoods, 'organisation-country-buyer': ['DEU'] }
+  assert.deepEqual(activeTedNotices([foreignGoods], today), [])
+  const [item] = activeTedNotices([foreignGoods], today, true)
+  assert.equal(item.country, 'DEU')
+  assert.deepEqual(item.codes, ['03200000', '15800000'])
+})

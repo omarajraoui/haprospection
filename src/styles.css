@@ -103,11 +103,29 @@ body {
 }
 
 @layer components {
-  .start-hero {
-    @apply rounded-2xl bg-[#173d34] p-6 text-white sm:p-10;
-  }
-
   .start-action {
     @apply rounded-lg bg-[#d6efde] px-4 py-3 font-semibold text-[#14382b] hover:bg-white disabled:opacity-60;
+  }
+}
+
+@layer components {
+  .market-hero {
+    @apply rounded-2xl border border-emerald-950 bg-linear-to-br from-[#102e27] to-[#205449] p-6 text-white sm:p-10;
+  }
+
+  .market-switch {
+    @apply grid grid-cols-2 gap-2 rounded-xl border border-stone-200 bg-white p-2;
+  }
+
+  .market-switch button {
+    @apply min-w-0 rounded-lg px-3 py-3 text-left font-semibold text-slate-800 hover:bg-stone-50 aria-pressed:bg-[#e4f2e9] aria-pressed:text-[#14382b] sm:px-5;
+  }
+
+  .market-switch small {
+    @apply mt-1 block text-xs font-normal text-slate-600 sm:text-sm;
+  }
+
+  .market-card {
+    @apply flex flex-col items-start rounded-xl border border-stone-200 border-t-2 border-t-emerald-700 bg-white p-5;
   }
 }

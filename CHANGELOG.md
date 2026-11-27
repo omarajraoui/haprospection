@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.0-rc.10
+
+L’accueil donne accès au catalogue des entreprises et aux demandes d’achat. La nouvelle vue interroge TED pour les produits agricoles et alimentaires et affiche les avis admissibles avec leur échéance et leur source. La sélection documentée s’enrichit de Yuly Food et d’AGT Foods.
+
 ## v1.0.0-rc.9
 
 L’accueil présente une sélection internationale de fournisseurs et d’importateurs documentés, avec filtres par catégorie et pays, reprise des critères dans la recherche et accès au portail UNGM.
